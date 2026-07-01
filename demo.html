@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSAP Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: 'Georgia', serif;
+    }
+
+    .demo-container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bg-glow {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .glow-1 {
+      background: #c9a84c;
+      top: 20%;
+      left: 30%;
+    }
+
+    .glow-2 {
+      background: #d4af37;
+      bottom: 20%;
+      right: 30%;
+    }
+
+    .glow-cursor {
+      background: radial-gradient(circle, #d4af37 0%, #c9a84c 40%, transparent 70%);
+      width: 400px;
+      height: 400px;
+      opacity: 0;
+      position: absolute;
+      pointer-events: none;
+      filter: blur(60px);
+      z-index: 0;
+    }
+
+    .main-text {
+      font-size: clamp(32px, 8vw, 52px);
+      font-weight: 400;
+      letter-spacing: 4px;
+      color: #d4af37;
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      line-height: 1.4;
+      padding: 0 20px;
+    }
+
+    .main-text .char {
+      display: inline-block;
+      transition: none;
+      cursor: default;
+    }
+
+    .subtitle {
+      font-size: clamp(10px, 2vw, 14px);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: #8a7a45;
+      margin-top: 24px;
+      opacity: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .line-left, .line-right {
+      position: absolute;
+      top: 50%;
+      height: 1px;
+      width: 0;
+      background: linear-gradient(90deg, transparent, #d4af37, transparent);
+      z-index: 1;
+    }
+
+    .line-left { right: 55%; }
+    .line-right { left: 55%; }
+
+    .replay-btn {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      background: none;
+      border: 1px solid #8a7a45;
+      color: #8a7a45;
+      padding: 8px 20px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 4px;
+      z-index: 10;
+      transition: all 0.3s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .replay-btn:hover, .replay-btn:active {
+      border-color: #d4af37;
+      color: #d4af37;
+    }
+
+    .color-info {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .color-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #d4af37;
+    }
+
+    .color-label {
+      font-size: 11px;
+      color: #8a7a45;
+      letter-spacing: 1px;
+      font-family: monospace;
+    }
+
+    @media (max-width: 480px) {
+      .bg-glow {
+        width: 200px;
+        height: 200px;
+        filter: blur(60px);
+      }
+      .glow-cursor {
+        width: 250px;
+        height: 250px;
+        filter: blur(40px);
+      }
+      .color-info { display: none; }
+      .replay-btn { bottom: 20px; right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container" id="container">
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+    <div class="bg-glow glow-cursor" id="glowCursor"></div>
+    <div class="line-left"></div>
+    <div class="line-right"></div>
+    <div class="main-text" id="mainText">hi 我是claude</div>
+    <div class="subtitle" id="subtitle">SplitText + Color Transition</div>
+    <button class="replay-btn" id="replayBtn">REPLAY</button>
+    <div class="color-info">
+      <div class="color-swatch"></div>
+      <span class="color-label">#D4AF37 Champagne Gold</span>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/SplitText.min.js"></script>
+  <script>
+    gsap.registerPlugin(SplitText);
+
+    function runAnimation() {
+      var split = SplitText.create("#mainText", { type: "chars" });
+      var tl = gsap.timeline();
+
+      tl.to(".glow-1", { opacity: 0.3, duration: 1.2, ease: "power2.out" }, 0)
+        .to(".glow-2", { opacity: 0.2, duration: 1.5, ease: "power2.out" }, 0.3)
+        .from(split.chars, {
+          opacity: 0,
+          y: 40,
+          rotationX: -90,
+          stagger: 0.08,
+          duration: 0.6,
+          ease: "back.out(1.7)"
+        }, 0.4)
+        .to(split.chars, {
+          color: "#f5e6a3",
+          stagger: { each: 0.06, from: "start" },
+          duration: 0.3,
+          ease: "power1.in"
+        }, 1.2)
+        .to(split.chars, {
+          color: "#d4af37",
+          stagger: { each: 0.06, from: "end" },
+          duration: 0.4,
+          ease: "power1.out"
+        }, 1.6)
+        .to(".line-left", { width: "20%", duration: 0.8, ease: "power2.inOut" }, 1.0)
+        .to(".line-right", { width: "20%", duration: 0.8, ease: "power2.inOut" }, 1.0)
+        .to("#subtitle", { opacity: 1, duration: 0.6, ease: "power2.out" }, 1.8)
+        .to("#glowCursor", { opacity: 0.25, duration: 1, ease: "power2.out" }, 2.0)
+        .to(".glow-1", {
+          scale: 1.2, opacity: 0.4, duration: 2,
+          ease: "sine.inOut", yoyo: true, repeat: -1
+        }, 2.5)
+        .to(".glow-2", {
+          scale: 1.3, opacity: 0.3, duration: 2.5,
+          ease: "sine.inOut", yoyo: true, repeat: -1
+        }, 2.5);
+
+      return { tl, split };
+    }
+
+    var current = runAnimation();
+
+    // mouse-following glow
+    var xTo = gsap.quickTo("#glowCursor", "x", { duration: 0.6, ease: "power3" });
+    var yTo = gsap.quickTo("#glowCursor", "y", { duration: 0.6, ease: "power3" });
+
+    var container = document.getElementById("container");
+
+    container.addEventListener("mousemove", function(e) {
+      xTo(e.clientX - 200);
+      yTo(e.clientY - 200);
+    });
+
+    // touch support for mobile
+    container.addEventListener("touchmove", function(e) {
+      var touch = e.touches[0];
+      xTo(touch.clientX - 125);
+      yTo(touch.clientY - 125);
+    }, { passive: true });
+
+    // text chars glow on hover
+    document.getElementById("mainText").addEventListener("mousemove", function(e) {
+      var chars = document.querySelectorAll("#mainText .char");
+      chars.forEach(function(char) {
+        var rect = char.getBoundingClientRect();
+        var charCenterX = rect.left + rect.width / 2;
+        var dist = Math.abs(e.clientX - charCenterX);
+        var maxDist = 120;
+        var brightness = 1 - Math.min(dist / maxDist, 1);
+
+        if (brightness > 0) {
+          var r = Math.round(212 + (245 - 212) * brightness);
+          var g = Math.round(175 + (230 - 175) * brightness);
+          var b = Math.round(55 + (163 - 55) * brightness);
+          gsap.to(char, {
+            color: "rgb(" + r + "," + g + "," + b + ")",
+            textShadow: "0 0 " + (brightness * 20) + "px rgba(212,175,55," + (brightness * 0.6) + ")",
+            duration: 0.2
+          });
+        }
+      });
+    });
+
+    document.getElementById("mainText").addEventListener("mouseleave", function() {
+      gsap.to("#mainText .char", {
+        color: "#d4af37",
+        textShadow: "none",
+        duration: 0.5,
+        stagger: 0.02
+      });
+    });
+
+    // replay
+    document.getElementById("replayBtn").addEventListener("click", function() {
+      current.tl.kill();
+      current.split.revert();
+      gsap.set(".glow-1, .glow-2", { opacity: 0, scale: 1 });
+      gsap.set("#glowCursor", { opacity: 0 });
+      gsap.set(".line-left, .line-right", { width: 0 });
+      gsap.set("#subtitle", { opacity: 0 });
+      current = runAnimation();
+    });
+  </script>
+</body>
+</html>
