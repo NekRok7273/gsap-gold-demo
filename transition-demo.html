@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拼贴过渡 Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #171512;
+    min-height: 100vh;
+    font-family: Georgia, 'Noto Serif SC', 'SimSun', serif;
+    overflow-x: hidden;
+  }
+
+  body.scissors, body.scissors * {
+    cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='6' cy='6' r='3'/><circle cx='6' cy='18' r='3'/><line x1='20' y1='4' x2='8.12' y2='15.88'/><line x1='14.47' y1='14.48' x2='20' y2='20'/><line x1='8.12' y1='8.12' x2='12' y2='12'/></svg>") 14 14, pointer;
+  }
+
+  /* —— 左缘丝线（面包屑）—— */
+  .thread {
+    position: fixed;
+    left: 18px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+  .thread-seg {
+    flex: 1;
+    width: 4px;
+    border-radius: 2px;
+    margin: 2px 0;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: width 0.2s, opacity 0.2s;
+  }
+  .thread-seg:hover { width: 8px; opacity: 1; }
+  .thread-label {
+    position: fixed;
+    left: 32px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #8a7a55;
+    writing-mode: vertical-rl;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* —— 页面容器 —— */
+  .stage {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 56px 20px 80px;
+    position: relative;
+  }
+
+  .page-layer { position: relative; }
+  .page-layer.hidden { display: none; }
+
+  /* —— 纸片 —— */
+  .scrap {
+    background: #ece4d4;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    padding: 26px 34px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .scrap.s-kicker {
+    display: inline-block;
+    padding: 8px 18px;
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: #6b5c3a;
+  }
+  .scrap.s-title {
+    padding: 22px 34px;
+  }
+  .scrap.s-title h1 {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 900;
+    font-size: 34px;
+    color: #2b2620;
+    letter-spacing: 2px;
+  }
+  .scrap.s-title .meta {
+    font-size: 12px;
+    color: #9a8c6a;
+    font-style: italic;
+    margin-top: 4px;
+  }
+  .scrap p {
+    font-size: 16px;
+    line-height: 2.1;
+    color: #3a342b;
+    text-align: justify;
+  }
+  .scrap.s-swatch {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+  }
+  .swatch-box {
+    flex-shrink: 0;
+    width: 92px;
+    height: 92px;
+    border: 1px solid rgba(90,70,30,0.3);
+  }
+  .swatch-caption {
+    font-size: 12px;
+    color: #7a6c4a;
+    line-height: 1.8;
+    font-style: italic;
+  }
+
+  /* —— 剪贴词（与entrance-demo一致）—— */
+  .clip {
+    display: inline-block;
+    position: relative;
+    padding: 1px 6px 2px;
+    margin: 0 2px;
+    background: #f4ecdb;
+    color: #3d3227;
+    box-shadow: 0 1px 3px rgba(50,35,10,0.18);
+    transform: rotate(-0.5deg);
+    transform-origin: 50% 100%;
+    white-space: nowrap;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 700;
+    font-size: 0.92em;
+    line-height: 1.5;
+    letter-spacing: 1px;
+  }
+
+  /* 飞行中的剪贴词克隆 */
+  .flying-clip {
+    position: fixed;
+    z-index: 200;
+    pointer-events: none;
+    background: #f4ecdb;
+    padding: 2px 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 700;
+    color: #3d3227;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="thread" id="thread"></div>
+
+<div class="stage" id="stage">
+
+  <!-- 第一层：海盗衬衫 -->
+  <div class="page-layer" id="pageA">
+    <div class="scrap s-kicker" data-rot="-0.6">LONDON · 1981</div>
+    <div class="scrap s-title" data-rot="0.4">
+      <h1>海盗衬衫</h1>
+      <div class="meta">Vivienne Westwood, Pirate Collection</div>
+    </div>
+    <div class="scrap" data-rot="-0.3">
+      <p>宽袖，荷叶领，未经漂白的棉布。1981年，Westwood把她在朋克年代积攒的全部愤怒，翻译成了另一种语言——不再撕碎衣服，而是回到十八世纪，从海盗和浪荡子身上偷来浪漫。</p>
+    </div>
+    <div class="scrap s-swatch" data-rot="0.5">
+      <div class="swatch-box" style="background: repeating-linear-gradient(45deg, #e8ddc4, #e8ddc4 6px, #ddd0b2 6px, #ddd0b2 12px);"></div>
+      <div class="swatch-caption">未漂白棉布，宽松剪裁<br>——图片素材占位</div>
+    </div>
+    <div class="scrap" data-rot="-0.4">
+      <p>这件衬衫最先穿在<span class="clip" data-target="pageB">Blitz</span>的孩子们身上。他们没什么钱，但每周二晚上，他们是全伦敦穿得最狠的人。Adam Ant穿着它登上Top of the Pops，一夜之间，全英国的青少年都想当海盗。</p>
+    </div>
+  </div>
+
+  <!-- 第二层：Blitz Club -->
+  <div class="page-layer hidden" id="pageB">
+    <div class="scrap s-kicker" data-rot="0.5">COVENT GARDEN · 1979–1981</div>
+    <div class="scrap s-title" data-rot="-0.5">
+      <h1>BLITZ</h1>
+      <div class="meta">一间只存在了十八个月的酒吧</div>
+    </div>
+    <div class="scrap" data-rot="0.3">
+      <p>每周二晚上，Steve Strange站在门口。他不收门票，他收造型——不够华丽的人进不来，哪怕你是Mick Jagger。里面，Boy George看着衣帽间，Spandau Ballet在演出，一群用窗帘布和旧军装打扮自己的孩子正在发明之后整个十年的样子。</p>
+    </div>
+    <div class="scrap" data-rot="-0.4">
+      <p>它只活了十八个月。但New Romantic从这里出生，八十年代从这里出生。后来人们说起那扇门，像说起一道海关：过去了，你就进入了另一个国家。</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script>
+  // 每层的氛围色：背景 + 丝线颜色
+  var moods = {
+    pageA: { bg: "#171512", thread: "#d4af37" },
+    pageB: { bg: "#141019", thread: "#8a4a6a" }
+  };
+
+  var stack = ["pageA"];        // 当前路径
+  var animating = false;
+
+  // 初始化每片纸的静止角度
+  gsap.utils.toArray(".scrap").forEach(function(s) {
+    gsap.set(s, { rotation: parseFloat(s.dataset.rot || 0) });
+  });
+
+  // —— 丝线渲染 ——
+  function renderThread() {
+    var thread = document.getElementById("thread");
+    thread.innerHTML = "";
+    stack.forEach(function(pid, i) {
+      var seg = document.createElement("div");
+      seg.className = "thread-seg";
+      seg.style.background = moods[pid].thread;
+      seg.title = "回到第" + (i + 1) + "层";
+      seg.addEventListener("click", function() { goBackTo(i); });
+      thread.appendChild(seg);
+    });
+  }
+
+  // —— 纸片散开 ——
+  function scatterOut(layer, done) {
+    var scraps = layer.querySelectorAll(".scrap");
+    gsap.to(scraps, {
+      x: function() { return gsap.utils.random(-360, 360); },
+      y: function() { return gsap.utils.random(-160, 240); },
+      rotation: function() { return gsap.utils.random(-28, 28); },
+      opacity: 0,
+      scale: 0.92,
+      duration: 0.55,
+      stagger: { each: 0.05, from: "random" },
+      ease: "power2.in",
+      onComplete: function() {
+        layer.classList.add("hidden");
+        gsap.set(scraps, { clearProps: "x,y,scale,opacity" });
+        scraps.forEach(function(s) {
+          gsap.set(s, { rotation: parseFloat(s.dataset.rot || 0) });
+        });
+        done();
+      }
+    });
+  }
+
+  // —— 纸片落下拼合 ——
+  function assembleIn(layer, done) {
+    layer.classList.remove("hidden");
+    var scraps = layer.querySelectorAll(".scrap");
+    gsap.fromTo(scraps,
+      {
+        x: function() { return gsap.utils.random(-300, 300); },
+        y: function() { return gsap.utils.random(-200, 160); },
+        rotation: function() { return gsap.utils.random(-24, 24); },
+        opacity: 0,
+        scale: 1.05
+      },
+      {
+        x: 0, y: 0, opacity: 1, scale: 1,
+        rotation: function(i, t) { return parseFloat(t.dataset.rot || 0); },
+        duration: 0.7,
+        stagger: { each: 0.07, from: "random" },
+        ease: "power3.out",
+        onComplete: done || function(){}
+      }
+    );
+  }
+
+  // —— 前进：剪开一个词 ——
+  function cutInto(clipEl, targetId) {
+    if (animating) return;
+    animating = true;
+
+    var fromLayer = document.getElementById(stack[stack.length - 1]);
+    var toLayer = document.getElementById(targetId);
+
+    // 1. 克隆被剪的词，固定在原位
+    var rect = clipEl.getBoundingClientRect();
+    var fly = document.createElement("div");
+    fly.className = "flying-clip";
+    fly.textContent = clipEl.textContent;
+    fly.style.left = rect.left + "px";
+    fly.style.top = rect.top + "px";
+    fly.style.fontSize = window.getComputedStyle(clipEl).fontSize;
+    document.body.appendChild(fly);
+    clipEl.style.visibility = "hidden";
+
+    // 2. 背景色渗透
+    gsap.to("body", { backgroundColor: moods[targetId].bg, duration: 1.4, ease: "sine.inOut" });
+
+    // 3. 旧页散开
+    scatterOut(fromLayer, function() {
+      stack.push(targetId);
+      renderThread();
+
+      // 4. 新页拼合
+      assembleIn(toLayer, function() {
+        // 5. 飞行词落到新标题上，放大融入，然后消失
+        var title = toLayer.querySelector(".s-title h1");
+        var tRect = title.getBoundingClientRect();
+        gsap.to(fly, {
+          left: tRect.left,
+          top: tRect.top,
+          fontSize: window.getComputedStyle(title).fontSize,
+          duration: 0.6,
+          ease: "power3.inOut",
+          onComplete: function() {
+            gsap.to(fly, { opacity: 0, duration: 0.35, onComplete: function() {
+              fly.remove();
+              clipEl.style.visibility = "";
+              animating = false;
+            }});
+          }
+        });
+      });
+    });
+
+    // 飞行词先轻轻抬到半空等待
+    gsap.to(fly, {
+      top: rect.top - 40,
+      rotation: -4,
+      scale: 1.15,
+      duration: 0.5,
+      ease: "power2.out"
+    });
+  }
+
+  // —— 后退：拽丝线回去 ——
+  function goBackTo(index) {
+    if (animating || index >= stack.length - 1) return;
+    animating = true;
+
+    var fromLayer = document.getElementById(stack[stack.length - 1]);
+    var targetId = stack[index];
+    var toLayer = document.getElementById(targetId);
+
+    gsap.to("body", { backgroundColor: moods[targetId].bg, duration: 1.2, ease: "sine.inOut" });
+
+    scatterOut(fromLayer, function() {
+      stack = stack.slice(0, index + 1);
+      renderThread();
+      assembleIn(toLayer, function() { animating = false; });
+    });
+  }
+
+  // —— 剪贴词交互（呼吸 + 靠近翘边 + 剪刀）——
+  var clips = gsap.utils.toArray(".clip");
+  clips.forEach(function(clip, i) {
+    gsap.to(clip, {
+      backgroundColor: "#faf4e4",
+      duration: 2.6, ease: "sine.inOut", yoyo: true, repeat: -1, delay: i * 0.7
+    });
+    clip.addEventListener("click", function() {
+      cutInto(clip, clip.dataset.target);
+    });
+  });
+
+  var lifters = clips.map(function(clip) {
+    return {
+      el: clip,
+      rot: gsap.quickTo(clip, "rotation", { duration: 0.4, ease: "power2.out" }),
+      yq: gsap.quickTo(clip, "y", { duration: 0.4, ease: "power2.out" })
+    };
+  });
+  document.addEventListener("mousemove", function(e) {
+    var near = false;
+    lifters.forEach(function(l) {
+      if (l.el.offsetParent === null) return;
+      var r = l.el.getBoundingClientRect();
+      var d = Math.hypot(e.clientX - (r.left + r.width/2), e.clientY - (r.top + r.height/2));
+      var t = 1 - Math.min(d / 90, 1);
+      if (t > 0) near = true;
+      l.rot(-0.5 + t * -3);
+      l.yq(t * -4);
+    });
+    document.body.classList.toggle("scissors", near);
+  });
+
+  // —— 开场：第一层拼合登场 ——
+  renderThread();
+  assembleIn(document.getElementById("pageA"));
+</script>
+</body>
+</html>
