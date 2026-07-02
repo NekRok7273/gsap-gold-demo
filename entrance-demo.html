@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>入口手感 Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -13,7 +15,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: Georgia, 'Songti SC', 'SimSun', serif;
+    font-family: Georgia, 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
     padding: 40px 20px;
   }
 
@@ -75,18 +77,21 @@
   .clip {
     display: inline-block;
     position: relative;
-    padding: 1px 7px 2px;
+    padding: 1px 6px 2px;
     margin: 0 2px;
-    background: #f6efdd;
-    color: #6b5015;
-    box-shadow: 0 1px 3px rgba(50,35,10,0.25);
-    transform: rotate(-0.8deg);
+    background: #f4ecdb;
+    color: #3d3227;
+    box-shadow: 0 1px 3px rgba(50,35,10,0.18);
+    transform: rotate(-0.5deg);
     transform-origin: 50% 100%;
     white-space: nowrap;
-    font-family: 'Courier New', 'Kaiti SC', monospace;
-    letter-spacing: 0.5px;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    font-weight: 700;
+    font-size: 0.92em;
+    line-height: 1.5;
+    letter-spacing: 1px;
   }
-  .clip:nth-of-type(2n) { transform: rotate(0.7deg); }
+  .clip:nth-of-type(2n) { transform: rotate(0.4deg); }
 
   /* 展开的纸片 */
   .expand {
@@ -163,9 +168,9 @@
   // —— 微呼吸：贴纸底色缓慢明暗，错开相位 ——
   clips.forEach(function(clip, i) {
     gsap.to(clip, {
-      backgroundColor: "#fdf8ea",
-      boxShadow: "0 2px 6px rgba(50,35,10,0.35)",
-      duration: 2.2,
+      backgroundColor: "#f9f3e3",
+      boxShadow: "0 1px 4px rgba(50,35,10,0.2)",
+      duration: 2.6,
       ease: "sine.inOut",
       yoyo: true,
       repeat: -1,

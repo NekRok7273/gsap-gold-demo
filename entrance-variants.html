@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>入口标记 · 四种方案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #171512;
+    min-height: 100vh;
+    font-family: Georgia, 'Noto Serif SC', 'SimSun', serif;
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+  }
+
+  .page {
+    max-width: 620px;
+    background: #ece4d4;
+    padding: 40px 48px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  .variant-label {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: #d4af37;
+    color: #171512;
+    font-size: 11px;
+    letter-spacing: 3px;
+    padding: 4px 12px;
+  }
+
+  p {
+    font-size: 16.5px;
+    line-height: 2.15;
+    color: #3a342b;
+    text-align: justify;
+  }
+
+  .mark { position: relative; cursor: pointer; white-space: nowrap; color: inherit; }
+
+  /* —— A：铅笔下划线（手画的、微微歪的波浪线）—— */
+  .u-pencil {
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='7' viewBox='0 0 90 7'><path d='M2 4.5 C 15 2.5, 28 6, 45 4 S 75 2.5, 88 4.5' fill='none' stroke='%238a6d2f' stroke-width='1.6' stroke-linecap='round' opacity='0.75'/></svg>") repeat-x 0 100%;
+    background-size: 90px 7px;
+    padding-bottom: 4px;
+  }
+
+  /* —— B：荧光笔扫过（淡金色，笔触不均）—— */
+  .u-marker {
+    background: linear-gradient(104deg,
+      transparent 0%, transparent 2%,
+      rgba(212,175,55,0.28) 4%, rgba(212,175,55,0.38) 30%,
+      rgba(212,175,55,0.30) 60%, rgba(212,175,55,0.40) 96%,
+      transparent 98%);
+    padding: 2px 3px;
+    margin: 0 -1px;
+  }
+
+  /* —— C：折角（右上角一个小纸角翻起来）—— */
+  .u-dogear { padding-right: 2px; }
+  .u-dogear::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -7px;
+    width: 9px;
+    height: 9px;
+    background: linear-gradient(225deg, #ece4d4 0%, #ece4d4 48%, #c9b98f 50%, #b8a678 100%);
+    box-shadow: -1px 1px 2px rgba(50,35,10,0.25);
+  }
+
+  /* —— D：编辑圈注（一个手画的圈围住词）—— */
+  .u-circle { padding: 0 4px; }
+  .u-circle::before {
+    content: "";
+    position: absolute;
+    inset: -5px -8px -6px -8px;
+    border: 1.5px solid rgba(138,109,47,0.65);
+    border-radius: 45% 55% 50% 48% / 60% 48% 58% 42%;
+    transform: rotate(-1.5deg);
+    pointer-events: none;
+  }
+
+  .note {
+    max-width: 620px;
+    color: #8a7a55;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-align: center;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<div class="note">同一段文字，四种入口标记<br>都保留呼吸和靠近翘边，凭直觉选</div>
+
+<article class="page">
+  <div class="variant-label">A · 铅笔线</div>
+  <p>宽袖，荷叶领，未经漂白的棉布。1981年，Westwood把她在<span class="mark u-pencil">朋克</span>年代积攒的全部愤怒翻译成了另一种语言。这件衬衫最先穿在<span class="mark u-pencil">Blitz</span>的孩子们身上，Adam Ant穿着它登上电视，一夜之间全英国的青少年都想当海盗。这就是<span class="mark u-pencil">New Romantic</span>运动本身的路。</p>
+</article>
+
+<article class="page">
+  <div class="variant-label">B · 荧光笔</div>
+  <p>宽袖，荷叶领，未经漂白的棉布。1981年，Westwood把她在<span class="mark u-marker">朋克</span>年代积攒的全部愤怒翻译成了另一种语言。这件衬衫最先穿在<span class="mark u-marker">Blitz</span>的孩子们身上，Adam Ant穿着它登上电视，一夜之间全英国的青少年都想当海盗。这就是<span class="mark u-marker">New Romantic</span>运动本身的路。</p>
+</article>
+
+<article class="page">
+  <div class="variant-label">C · 折角</div>
+  <p>宽袖，荷叶领，未经漂白的棉布。1981年，Westwood把她在<span class="mark u-dogear">朋克</span>年代积攒的全部愤怒翻译成了另一种语言。这件衬衫最先穿在<span class="mark u-dogear">Blitz</span>的孩子们身上，Adam Ant穿着它登上电视，一夜之间全英国的青少年都想当海盗。这就是<span class="mark u-dogear">New Romantic</span>运动本身的路。</p>
+</article>
+
+<article class="page">
+  <div class="variant-label">D · 圈注</div>
+  <p>宽袖，荷叶领，未经漂白的棉布。1981年，Westwood把她在<span class="mark u-circle">朋克</span>年代积攒的全部愤怒翻译成了另一种语言。这件衬衫最先穿在<span class="mark u-circle">Blitz</span>的孩子们身上，Adam Ant穿着它登上电视，一夜之间全英国的青少年都想当海盗。这就是<span class="mark u-circle">New Romantic</span>运动本身的路。</p>
+</article>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script>
+  var marks = gsap.utils.toArray(".mark");
+
+  // 呼吸：极轻微的透明度起伏
+  marks.forEach(function(m, i) {
+    gsap.to(m, {
+      opacity: 0.82,
+      duration: 2.4,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+      delay: (i % 3) * 0.8
+    });
+  });
+
+  // 靠近微抬
+  var lifters = marks.map(function(m) {
+    return {
+      el: m,
+      y: gsap.quickTo(m, "y", { duration: 0.4, ease: "power2.out" })
+    };
+  });
+  document.addEventListener("mousemove", function(e) {
+    lifters.forEach(function(l) {
+      var r = l.el.getBoundingClientRect();
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+      var t = 1 - Math.min(dist / 80, 1);
+      l.y(t * -3);
+    });
+  });
+</script>
+</body>
+</html>
