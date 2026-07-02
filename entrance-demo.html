@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>入口手感 Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #171512;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Georgia, 'Songti SC', 'SimSun', serif;
+    padding: 40px 20px;
+  }
+
+  /* 剪刀光标：靠近可点词时整页换成剪刀 */
+  body.scissors, body.scissors * {
+    cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='6' cy='6' r='3'/><circle cx='6' cy='18' r='3'/><line x1='20' y1='4' x2='8.12' y2='15.88'/><line x1='14.47' y1='14.48' x2='20' y2='20'/><line x1='8.12' y1='8.12' x2='12' y2='12'/></svg>") 14 14, pointer;
+  }
+
+  .page {
+    max-width: 620px;
+    background: #ece4d4;
+    padding: 64px 56px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    position: relative;
+  }
+
+  /* 纸的质感：轻微的印刷不均 */
+  .page::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(120,90,40,0.05), transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(60,50,30,0.06), transparent 50%);
+  }
+
+  .kicker {
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: #8a7a55;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 30px;
+    font-weight: 400;
+    color: #2b2620;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .meta {
+    font-size: 12px;
+    color: #9a8c6a;
+    margin-bottom: 36px;
+    font-style: italic;
+  }
+
+  p {
+    font-size: 16.5px;
+    line-height: 2.15;
+    color: #3a342b;
+    margin-bottom: 24px;
+    text-align: justify;
+  }
+
+  /* —— 剪贴词 —— */
+  .clip {
+    display: inline-block;
+    position: relative;
+    padding: 1px 7px 2px;
+    margin: 0 2px;
+    background: #f6efdd;
+    color: #6b5015;
+    box-shadow: 0 1px 3px rgba(50,35,10,0.25);
+    transform: rotate(-0.8deg);
+    transform-origin: 50% 100%;
+    white-space: nowrap;
+    font-family: 'Courier New', 'Kaiti SC', monospace;
+    letter-spacing: 0.5px;
+  }
+  .clip:nth-of-type(2n) { transform: rotate(0.7deg); }
+
+  /* 展开的纸片 */
+  .expand {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15,13,10,0.55);
+    z-index: 50;
+  }
+  .expand-card {
+    max-width: 420px;
+    background: #f6efdd;
+    padding: 40px 36px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    transform: rotate(-1deg);
+  }
+  .expand-card h2 {
+    font-size: 20px;
+    font-weight: 400;
+    color: #6b5015;
+    margin-bottom: 14px;
+  }
+  .expand-card p {
+    font-size: 14px;
+    line-height: 1.9;
+    color: #4a4234;
+    margin: 0;
+  }
+  .expand-hint {
+    margin-top: 22px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #a09268;
+  }
+
+  .footnote {
+    margin-top: 36px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #a09268;
+  }
+</style>
+</head>
+<body>
+
+<article class="page">
+  <div class="kicker">LONDON · 1981</div>
+  <h1>海盗衬衫</h1>
+  <div class="meta">Vivienne Westwood, Pirate Collection</div>
+
+  <p>宽袖，荷叶领，未经漂白的棉布。1981年，Westwood把她在<span class="clip" data-title="朋克 PUNK" data-body="1976年前后在伦敦爆发。安全别针、撕裂、挑衅。Westwood和Malcolm McLaren的SEX商店是它的军火库。到80年代初，朋克作为运动已死，但它的孩子们各自上路。">朋克</span>年代积攒的全部愤怒，翻译成了另一种语言——不再撕碎衣服，而是回到十八世纪，从海盗和浪荡子身上偷来浪漫。</p>
+
+  <p>这件衬衫最先穿在<span class="clip" data-title="BLITZ CLUB" data-body="Covent Garden的一间酒吧，1979-1981，只存在了一年半。Steve Strange把门：不够华丽不让进。这里诞生了New Romantic，和之后整个十年的样子。">Blitz</span>的孩子们身上。他们没什么钱，但每周二晚上，他们是全伦敦穿得最狠的人。Adam Ant穿着它登上Top of the Pops，一夜之间，全英国的青少年都想当海盗。</p>
+
+  <p>从反叛到浪漫，从地下到电视——这件衬衫走过的路，就是<span class="clip" data-title="NEW ROMANTIC" data-body="朋克的华丽变体。灵感来自摄政时代、好莱坞、歌舞伎。男人化妆、穿荷叶领。Duran Duran、Spandau Ballet、Boy George都从这里出发。">New Romantic</span>运动本身的路。</p>
+
+  <div class="footnote">试试把鼠标移近那些贴纸 · 点一下剪开它</div>
+</article>
+
+<div class="expand" id="expand">
+  <div class="expand-card" id="expandCard">
+    <h2 id="expandTitle"></h2>
+    <p id="expandBody"></p>
+    <div class="expand-hint">点击任意处返回</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script>
+  var clips = gsap.utils.toArray(".clip");
+
+  // —— 微呼吸：贴纸底色缓慢明暗，错开相位 ——
+  clips.forEach(function(clip, i) {
+    gsap.to(clip, {
+      backgroundColor: "#fdf8ea",
+      boxShadow: "0 2px 6px rgba(50,35,10,0.35)",
+      duration: 2.2,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+      delay: i * 0.7
+    });
+  });
+
+  // —— 靠近翘边：还没碰到就微微掀起 ——
+  var lifters = clips.map(function(clip) {
+    return {
+      el: clip,
+      rot: gsap.quickTo(clip, "rotation", { duration: 0.4, ease: "power2.out" }),
+      y: gsap.quickTo(clip, "y", { duration: 0.4, ease: "power2.out" }),
+      baseRot: gsap.getProperty(clip, "rotation")
+    };
+  });
+
+  var RANGE = 90; // 感应半径 px
+
+  document.addEventListener("mousemove", function(e) {
+    var nearAny = false;
+    lifters.forEach(function(l) {
+      var r = l.el.getBoundingClientRect();
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+      var t = 1 - Math.min(dist / RANGE, 1); // 0~1，越近越大
+      if (t > 0) nearAny = true;
+      l.rot(l.baseRot + t * -3.5);
+      l.y(t * -4);
+    });
+    document.body.classList.toggle("scissors", nearAny);
+  });
+
+  // —— 点击：剪开，展开纸片 ——
+  var expand = document.getElementById("expand");
+  var card = document.getElementById("expandCard");
+
+  clips.forEach(function(clip) {
+    clip.addEventListener("click", function() {
+      document.getElementById("expandTitle").textContent = clip.dataset.title;
+      document.getElementById("expandBody").textContent = clip.dataset.body;
+      expand.style.display = "flex";
+      gsap.fromTo(expand, { opacity: 0 }, { opacity: 1, duration: 0.35 });
+      gsap.fromTo(card,
+        { rotation: -6, scale: 0.6, y: 60, opacity: 0 },
+        { rotation: -1, scale: 1, y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }
+      );
+      // 被剪的词本体抖一下，像被剪刀铰了
+      gsap.fromTo(clip, { rotation: -6 }, { rotation: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+    });
+  });
+
+  expand.addEventListener("click", function() {
+    gsap.to(expand, { opacity: 0, duration: 0.25, onComplete: function() {
+      expand.style.display = "none";
+    }});
+  });
+
+  // —— 首次演示：第一个贴纸自己翘一次，教用户 ——
+  var first = clips[0];
+  gsap.timeline({ delay: 1.2 })
+    .to(first, { rotation: -4, y: -5, duration: 0.6, ease: "power2.out" })
+    .to(first, { rotation: gsap.getProperty(first, "rotation"), y: 0, duration: 0.8, ease: "bounce.out" }, "+=0.6");
+</script>
+</body>
+</html>
