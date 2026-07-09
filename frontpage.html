@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CULTURE HIDES HERE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- 英文：Roboto Flex 可变字体（字重100-1000 字宽25-151） -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<!-- 中文：Noto Sans SC 可变字重，text参数只加载这6个字，文件极小 -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&text=这里藏着文化&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: #f2f0eb;
+    overflow: hidden;
+    font-family: 'Roboto Flex', 'Arial Black', sans-serif;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* —— 框 —— */
+  .frame {
+    height: 86vh;
+    width: min(94vw, 70vh);
+    display: flex;
+    flex-direction: column;
+    background: #f2f0eb;
+  }
+
+  .row {
+    display: flex;
+    align-items: stretch;
+    min-height: 0;
+  }
+
+  /* 行高比例 */
+  .row-a { flex: 1.5; }
+  .row-b { flex: 1.15; }
+  .row-c { flex: 0.95; }
+  .row-d { flex: 0.85; }
+  .row-e { flex: 1.7; }
+
+  .cell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .g {
+    color: #111;
+    line-height: 0.82;
+    font-weight: 700;
+    font-variation-settings: 'wght' 500, 'wdth' 100;
+    will-change: transform, font-variation-settings;
+    user-select: none;
+    transform-origin: 50% 60%;
+  }
+
+  .row-a .g { font-size: 24vh; }
+  .row-b .g { font-size: 17vh; }
+  .row-c .g { font-size: 13.5vh; }
+  .row-d .g { font-size: 9.5vh; }
+  .row-e .g { font-size: 27vh; }
+
+  /* 中文行：黑底白字，咬合 */
+  .row-d .cell {
+    background: #111;
+  }
+  .row-d .g {
+    color: #f2f0eb;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    font-variation-settings: 'wght' 500;
+    line-height: 1;
+  }
+
+  /* 个别格子反色制造咬合感 */
+  .cell.inv { background: #111; }
+  .cell.inv .g { color: #f2f0eb; }
+
+  /* —— 声音提示 —— */
+  .hint {
+    position: fixed;
+    bottom: 4vh;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #999;
+    font-variation-settings: 'wght' 400;
+    animation: breathe 2.4s ease-in-out infinite;
+    transition: opacity 0.6s;
+  }
+  .hint.off { opacity: 0; }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 0.9; }
+  }
+
+  /* —— 调试面板（按D开关）—— */
+  .debug {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    background: rgba(17,17,17,0.92);
+    color: #eee;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 14px;
+    border-radius: 6px;
+    display: none;
+    z-index: 99;
+    width: 230px;
+    cursor: default;
+  }
+  .debug.on { display: block; }
+  .debug label { display: block; margin-top: 8px; color: #999; }
+  .debug input[type=range] { width: 100%; }
+  .debug .val { color: #fff; float: right; }
+</style>
+</head>
+<body>
+
+<div class="frame" id="frame">
+  <div class="row row-a">
+    <div class="cell"><span class="g">C</span></div>
+    <div class="cell"><span class="g">U</span></div>
+    <div class="cell inv"><span class="g">L</span></div>
+  </div>
+  <div class="row row-b">
+    <div class="cell"><span class="g">T</span></div>
+    <div class="cell"><span class="g">U</span></div>
+    <div class="cell"><span class="g">R</span></div>
+    <div class="cell inv"><span class="g">E</span></div>
+  </div>
+  <div class="row row-c">
+    <div class="cell inv"><span class="g">H</span></div>
+    <div class="cell"><span class="g">I</span></div>
+    <div class="cell"><span class="g">D</span></div>
+    <div class="cell"><span class="g">E</span></div>
+    <div class="cell"><span class="g">S</span></div>
+  </div>
+  <div class="row row-d">
+    <div class="cell"><span class="g cn">这</span></div>
+    <div class="cell"><span class="g cn">里</span></div>
+    <div class="cell"><span class="g cn">藏</span></div>
+    <div class="cell"><span class="g cn">着</span></div>
+    <div class="cell"><span class="g cn">文</span></div>
+    <div class="cell"><span class="g cn">化</span></div>
+  </div>
+  <div class="row row-e">
+    <div class="cell"><span class="g">H</span></div>
+    <div class="cell"><span class="g">E</span></div>
+    <div class="cell inv"><span class="g">R</span></div>
+    <div class="cell"><span class="g">E</span></div>
+  </div>
+</div>
+
+<div class="hint" id="hint">点击开启声音 CLICK FOR SOUND</div>
+
+<div class="debug" id="debug">
+  <b>DEBUG</b> (按D关闭)
+  <label>灵敏度 <span class="val" id="v-sens"></span><input type="range" id="p-sens" min="0.5" max="3" step="0.1"></label>
+  <label>起跳速度 <span class="val" id="v-atk"></span><input type="range" id="p-atk" min="0.05" max="0.9" step="0.05"></label>
+  <label>回落速度 <span class="val" id="v-rel"></span><input type="range" id="p-rel" min="0.02" max="0.5" step="0.02"></label>
+  <label>字重下限 <span class="val" id="v-wmin"></span><input type="range" id="p-wmin" min="100" max="600" step="25"></label>
+  <label>字重上限 <span class="val" id="v-wmax"></span><input type="range" id="p-wmax" min="600" max="1000" step="25"></label>
+  <label>字宽幅度 <span class="val" id="v-wd"></span><input type="range" id="p-wd" min="0" max="90" step="5"></label>
+  <label>拉伸幅度 <span class="val" id="v-sy"></span><input type="range" id="p-sy" min="0" max="0.4" step="0.02"></label>
+  <label>节拍 BPM <span class="val" id="v-bpm"></span><input type="range" id="p-bpm" min="80" max="170" step="2"></label>
+</div>
+
+<script>
+// ============ 参数 ============
+var P = {
+  sens: 1.6,   // 灵敏度
+  atk: 0.4,    // 起跳平滑
+  rel: 0.10,   // 回落平滑
+  wMin: 300,   // 字重下限
+  wMax: 950,   // 字重上限
+  wd: 60,      // 字宽波动幅度（基准75 最高151）
+  sy: 0.14,    // 纵向拉伸幅度
+  bpm: 128     // 合成鼓点速度
+};
+
+// ============ 字与频段 ============
+var glyphs = Array.prototype.slice.call(document.querySelectorAll('.g'));
+var N = glyphs.length;
+
+// 每个字一个状态：当前值v、频段band、待机相位
+var state = glyphs.map(function (el, i) {
+  var fs = parseFloat(getComputedStyle(el).fontSize);
+  return {
+    el: el,
+    isCN: el.classList.contains('cn'),
+    v: 0,
+    // 大字吃低频、小字吃高频：按字号排序分配频段
+    fontSize: fs,
+    band: 0,
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.4 + Math.random() * 0.6
+  };
+});
+
+// 按字号从大到小排，均匀铺满频谱下半段（高频段能量太弱，只用0~60%）
+(function assignBands() {
+  var sorted = state.slice().sort(function (a, b) { return b.fontSize - a.fontSize; });
+  sorted.forEach(function (s, rank) {
+    s.band = Math.floor((rank / (N - 1)) * 0.6 * 63); // fft 128 → 64个频点
+  });
+})();
+
+// ============ 待机呼吸（无声时） ============
+var audioOn = false;
+
+// ============ 合成鼓点（Web Audio，无版权占位音源） ============
+var ctx, analyser, freq, master;
+
+function startAudio() {
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  master = ctx.createGain();
+  master.gain.value = 0.7;
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 128;
+  analyser.smoothingTimeConstant = 0.55;
+  master.connect(analyser);
+  analyser.connect(ctx.destination);
+  freq = new Uint8Array(analyser.frequencyBinCount);
+
+  // 噪声buffer（做镲和军鼓）
+  var noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+  var d = noiseBuf.getChannelData(0);
+  for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+
+  function kick(t) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(160, t);
+    o.frequency.exponentialRampToValueAtTime(45, t + 0.11);
+    g.gain.setValueAtTime(1.0, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + 0.3);
+  }
+  function hat(t, loud) {
+    var s = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+    s.buffer = noiseBuf;
+    f.type = 'highpass'; f.frequency.value = 7000;
+    g.gain.setValueAtTime(loud ? 0.35 : 0.18, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    s.connect(f); f.connect(g); g.connect(master);
+    s.start(t); s.stop(t + 0.06);
+  }
+  function snare(t) {
+    var s = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+    s.buffer = noiseBuf;
+    f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.8;
+    g.gain.setValueAtTime(0.55, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    s.connect(f); f.connect(g); g.connect(master);
+    s.start(t); s.stop(t + 0.18);
+  }
+  function bass(t, f0, dur) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.value = f0;
+    var lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 500;
+    g.gain.setValueAtTime(0.16, t);
+    g.gain.setValueAtTime(0.16, t + dur - 0.03);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp); lp.connect(g); g.connect(master);
+    o.start(t); o.stop(t + dur);
+  }
+
+  // 前瞻调度器：每24ms排未来0.12s的音符
+  var next = ctx.currentTime + 0.1;
+  var step = 0; // 十六分音符计数
+  var bassline = [55, 55, 82.4, 55, 65.4, 55, 49, 61.7]; // A A E A C A G B♭
+  setInterval(function () {
+    var spb = 60 / P.bpm;       // 每拍秒数
+    var s16 = spb / 4;          // 十六分音符
+    while (next < ctx.currentTime + 0.12) {
+      var beat = Math.floor(step / 4) % 4;
+      var sub = step % 4;
+      if (sub === 0) kick(next);
+      if (sub === 2) hat(next, false);
+      if (sub === 0 && (beat === 1 || beat === 3)) snare(next);
+      if (sub === 0) bass(next, bassline[Math.floor(step / 8) % 8], s16 * 3.5);
+      if (beat === 3 && sub === 2) hat(next + s16, true);
+      next += s16;
+      step++;
+    }
+  }, 24);
+}
+
+// ============ 渲染循环 ============
+function frameLoop(t) {
+  var i, s, target;
+
+  if (audioOn) {
+    analyser.getByteFrequencyData(freq);
+  }
+
+  for (i = 0; i < N; i++) {
+    s = state[i];
+
+    if (audioOn) {
+      target = (freq[s.band] / 255) * P.sens;
+      if (target > 1) target = 1;
+    } else {
+      // 待机：缓慢呼吸
+      target = 0.10 + 0.09 * (0.5 + 0.5 * Math.sin(t * 0.001 * s.speed + s.phase));
+    }
+
+    // 平滑：起跳快回落慢
+    s.v += (target > s.v ? P.atk : P.rel) * (target - s.v);
+
+    var wght = Math.round(P.wMin + (P.wMax - P.wMin) * s.v);
+    if (s.isCN) {
+      var cnW = Math.round(200 + 700 * s.v);
+      s.el.style.fontVariationSettings = "'wght' " + cnW;
+    } else {
+      var wdth = Math.round(75 + P.wd * s.v);
+      s.el.style.fontVariationSettings = "'wght' " + wght + ", 'wdth' " + wdth;
+    }
+    s.el.style.transform = 'scaleY(' + (1 + P.sy * s.v) + ')';
+  }
+  requestAnimationFrame(frameLoop);
+}
+requestAnimationFrame(frameLoop);
+
+// ============ 点击开声 ============
+document.body.addEventListener('click', function (e) {
+  if (e.target.closest('.debug')) return;
+  if (!audioOn) {
+    startAudio();
+    audioOn = true;
+    document.getElementById('hint').classList.add('off');
+  } else if (ctx.state === 'running') {
+    ctx.suspend();   // 再点暂停
+  } else {
+    ctx.resume();    // 再点继续
+  }
+});
+
+// ============ 调试面板 ============
+var dbg = document.getElementById('debug');
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'd' || e.key === 'D') dbg.classList.toggle('on');
+});
+
+function bind(id, key, fmt) {
+  var input = document.getElementById('p-' + id);
+  var label = document.getElementById('v-' + id);
+  input.value = P[key];
+  label.textContent = P[key];
+  input.addEventListener('input', function () {
+    P[key] = parseFloat(input.value);
+    label.textContent = input.value;
+  });
+}
+bind('sens', 'sens'); bind('atk', 'atk'); bind('rel', 'rel');
+bind('wmin', 'wMin'); bind('wmax', 'wMax'); bind('wd', 'wd');
+bind('sy', 'sy'); bind('bpm', 'bpm');
+</script>
+</body>
+</html>
