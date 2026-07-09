@@ -61,7 +61,16 @@
     font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
     font-variation-settings: 'wght' 500;
     line-height: 1;
+    font-size: 0.78em; /* 汉字是方块，同行里略小一号才平衡 */
   }
+
+  /* 每行字号挂在格子上，字继承（汉字用em缩小才不会盖过字母） */
+  .row:nth-child(1) .cell { font-size: 21vh; }
+  .row:nth-child(2) .cell { font-size: 15vh; }
+  .row:nth-child(3) .cell { font-size: 11.5vh; }
+  .row:nth-child(4) .cell { font-size: 11vh; }
+  .row:nth-child(5) .cell { font-size: 19vh; }
+  .g { font-size: 1em; }
 
   /* 格子角标：尺寸标注 */
   .tag {
