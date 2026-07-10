@@ -26,8 +26,8 @@
   }
 
   .frame {
-    height: 88vh;
-    width: min(94vw, 72vh);
+    height: 90vh;
+    width: min(95vw, 74vh);
     display: flex;
     flex-direction: column;
   }
@@ -36,59 +36,36 @@
 
   .cell {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
     min-width: 0;
-    border: 1px solid rgba(17,17,17,0.0); /* 骨架线，JS控制透明度 */
   }
-
   .cell.inv { background: #111; }
 
+  /* 字：绝对撑满格子，靠JS非均匀缩放填死 */
   .g {
+    position: absolute;
+    left: 50%;
+    top: 50%;
     color: #111;
-    line-height: 0.84;
-    font-variation-settings: 'wght' 500, 'wdth' 100;
+    line-height: 1;
+    font-variation-settings: 'wght' 800, 'wdth' 100;
     will-change: transform, font-variation-settings, opacity;
     user-select: none;
-    transform-origin: 50% 55%;
     white-space: nowrap;
+    transform-origin: 50% 50%;
+    /* 初始放大到一个基准尺寸，JS再量真实盒子做非均匀scale */
+    font-size: 100px;
   }
   .cell.inv .g { color: #f2f0eb; }
 
   .g.cn {
     font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
-    font-variation-settings: 'wght' 500;
-    line-height: 1;
-    font-size: 0.78em; /* 汉字是方块，同行里略小一号才平衡 */
+    font-variation-settings: 'wght' 700;
   }
-
-  /* 每行字号挂在格子上，字继承（汉字用em缩小才不会盖过字母） */
-  .row:nth-child(1) .cell { font-size: 21vh; }
-  .row:nth-child(2) .cell { font-size: 15vh; }
-  .row:nth-child(3) .cell { font-size: 11.5vh; }
-  .row:nth-child(4) .cell { font-size: 11vh; }
-  .row:nth-child(5) .cell { font-size: 19vh; }
-  .g { font-size: 1em; }
-
-  /* 格子角标：尺寸标注 */
-  .tag {
-    position: absolute;
-    top: 3px;
-    left: 5px;
-    font-family: monospace;
-    font-size: 9px;
-    letter-spacing: 0.5px;
-    color: #111;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .cell.inv .tag { color: #f2f0eb; }
 
   .hint {
     position: fixed;
-    bottom: 4vh;
+    bottom: 3vh;
     left: 50%;
     transform: translateX(-50%);
     font-size: 11px;
@@ -114,44 +91,39 @@
 </head>
 <body>
 
-<!--
-  布局：中英文按阅读顺序交错，两条线各自读得通
-  行1: C U 这        行2: L T 里 U      行3: R E 藏 H I
-  行4: D E 着 S 文   行5: H E 化 R E
-  英文连读: CULTURE HIDES HERE ✓  中文连读: 这里藏着文化 ✓
--->
+<!-- 阅读顺序交错：英文连读 CULTURE HIDES HERE，中文连读 这里藏着文化 -->
 <div class="frame" id="frame">
-  <div class="row" data-flex="1.5">
-    <div class="cell"><span class="g">C</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">U</span><span class="tag"></span></div>
-    <div class="cell inv"><span class="g cn">这</span><span class="tag"></span></div>
+  <div class="row" data-h="1.35">
+    <div class="cell" data-w="1.3"><span class="g">C</span></div>
+    <div class="cell" data-w="1.0"><span class="g">U</span></div>
+    <div class="cell inv" data-w="1.15"><span class="g cn">这</span></div>
   </div>
-  <div class="row" data-flex="1.15">
-    <div class="cell inv"><span class="g">L</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">T</span><span class="tag"></span></div>
-    <div class="cell inv"><span class="g cn">里</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">U</span><span class="tag"></span></div>
+  <div class="row" data-h="1.0">
+    <div class="cell inv" data-w="0.85"><span class="g">L</span></div>
+    <div class="cell" data-w="1.35"><span class="g">T</span></div>
+    <div class="cell inv" data-w="1.0"><span class="g cn">里</span></div>
+    <div class="cell" data-w="0.7"><span class="g">U</span></div>
   </div>
-  <div class="row" data-flex="1.0">
-    <div class="cell"><span class="g">R</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">E</span><span class="tag"></span></div>
-    <div class="cell inv"><span class="g cn">藏</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">H</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">I</span><span class="tag"></span></div>
+  <div class="row" data-h="0.92">
+    <div class="cell" data-w="0.75"><span class="g">R</span></div>
+    <div class="cell" data-w="1.2"><span class="g">E</span></div>
+    <div class="cell inv" data-w="1.0"><span class="g cn">藏</span></div>
+    <div class="cell" data-w="0.65"><span class="g">H</span></div>
+    <div class="cell" data-w="0.45"><span class="g">I</span></div>
   </div>
-  <div class="row" data-flex="1.0">
-    <div class="cell"><span class="g">D</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">E</span><span class="tag"></span></div>
-    <div class="cell inv"><span class="g cn">着</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">S</span><span class="tag"></span></div>
-    <div class="cell inv"><span class="g cn">文</span><span class="tag"></span></div>
+  <div class="row" data-h="0.92">
+    <div class="cell" data-w="1.1"><span class="g">D</span></div>
+    <div class="cell" data-w="0.9"><span class="g">E</span></div>
+    <div class="cell inv" data-w="0.95"><span class="g cn">着</span></div>
+    <div class="cell" data-w="1.15"><span class="g">S</span></div>
+    <div class="cell inv" data-w="1.0"><span class="g cn">文</span></div>
   </div>
-  <div class="row" data-flex="1.55">
-    <div class="cell"><span class="g">H</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">E</span><span class="tag"></span></div>
-    <div class="cell inv"><span class="g cn">化</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">R</span><span class="tag"></span></div>
-    <div class="cell"><span class="g">E</span><span class="tag"></span></div>
+  <div class="row" data-h="1.5">
+    <div class="cell" data-w="1.0"><span class="g">H</span></div>
+    <div class="cell" data-w="0.9"><span class="g">E</span></div>
+    <div class="cell inv" data-w="1.1"><span class="g cn">化</span></div>
+    <div class="cell" data-w="0.85"><span class="g">R</span></div>
+    <div class="cell" data-w="1.15"><span class="g">E</span></div>
   </div>
 </div>
 
@@ -164,8 +136,8 @@
   <label>回落速度 <span class="val" id="v-rel"></span><input type="range" id="p-rel" min="0.02" max="0.5" step="0.02"></label>
   <label>格子形变幅度 <span class="val" id="v-grid"></span><input type="range" id="p-grid" min="0" max="2.5" step="0.1"></label>
   <label>卡机频率 <span class="val" id="v-stuck"></span><input type="range" id="p-stuck" min="0" max="0.02" step="0.001"></label>
-  <label>字重上限 <span class="val" id="v-wmax"></span><input type="range" id="p-wmax" min="600" max="1000" step="25"></label>
-  <label>字宽幅度 <span class="val" id="v-wd"></span><input type="range" id="p-wd" min="0" max="90" step="5"></label>
+  <label>笔画粗细幅度 <span class="val" id="v-wght"></span><input type="range" id="p-wght" min="0" max="500" step="25"></label>
+  <label>字宽幅度 <span class="val" id="v-wd"></span><input type="range" id="p-wd" min="0" max="76" step="4"></label>
   <label>节拍 BPM <span class="val" id="v-bpm"></span><input type="range" id="p-bpm" min="80" max="170" step="2"></label>
 </div>
 
@@ -173,14 +145,13 @@
 // ================= 参数 =================
 var P = {
   sens: 1.6,
-  atk: 0.45,
-  rel: 0.10,
-  grid: 1.2,    // 格子形变幅度
-  stuck: 0.006, // 每帧每字卡死概率
-  wMin: 280,
-  wMax: 950,
-  wd: 60,
-  sy: 0.12,
+  atk: 0.5,
+  rel: 0.12,
+  grid: 1.0,
+  stuck: 0.005,
+  wghtBase: 780,   // 笔画基准
+  wghtAmp: 200,    // 笔画随能量波动
+  wd: 40,          // 字宽波动
   bpm: 126
 };
 
@@ -191,234 +162,205 @@ var cells = Array.prototype.slice.call(frame.querySelectorAll('.cell'));
 var glyphs = Array.prototype.slice.call(frame.querySelectorAll('.g'));
 var N = glyphs.length;
 
-// 每字状态
-var state = glyphs.map(function (el, i) {
+var state = glyphs.map(function (el) {
   return {
     el: el,
     cell: el.parentNode,
-    tag: el.parentNode.querySelector('.tag'),
     isCN: el.classList.contains('cn'),
-    v: 0,          // 平滑后能量
+    v: 0,
     band: 0,
     phase: Math.random() * Math.PI * 2,
     speed: 0.35 + Math.random() * 0.7,
-    stuckUntil: 0, // 卡机到几时
-    cellFlex: 1    // 格子当前flex
+    stuckUntil: 0,
+    wCur: parseFloat(el.parentNode.dataset.w),  // 当前列宽flex（平滑用）
+    natW: 100, natH: 100  // 字的自然尺寸（100px字号下），resize时测
   };
 });
-
-// 行状态
 var rowState = rows.map(function (el) {
-  return { el: el, base: parseFloat(el.dataset.flex), v: 0, target: 0 };
+  return { el: el, base: parseFloat(el.dataset.h) };
 });
 
-// 频段分配：行越靠上下（字越大）吃越低的频段
+// 频段：字号大的吃低频
 (function () {
-  var order = [];
-  rows.forEach(function (row, ri) {
-    Array.prototype.forEach.call(row.querySelectorAll('.g'), function (g) {
-      order.push({ g: g, size: parseFloat(rowState[ri].base) });
-    });
+  var order = state.map(function (s, i) {
+    return { i: i, h: parseFloat(s.cell.parentNode.dataset.h) * parseFloat(s.cell.dataset.w) };
   });
-  order.sort(function (a, b) { return b.size - a.size; });
+  order.sort(function (a, b) { return b.h - a.h; });
   order.forEach(function (o, rank) {
-    var s = state[glyphs.indexOf(o.g)];
-    s.band = Math.floor((rank / (N - 1)) * 0.6 * 63);
+    state[o.i].band = Math.floor((rank / (N - 1)) * 0.6 * 63);
   });
 })();
 
+// 静止时先铺基准flex
+function applyBaseGrid() {
+  rowState.forEach(function (r) { r.el.style.flexGrow = r.base; });
+  state.forEach(function (s) { s.cell.style.flexGrow = parseFloat(s.cell.dataset.w); });
+}
+applyBaseGrid();
+
+// 测每个字在100px字号下的自然宽高（字体加载后 + resize后）
+function measureGlyphs() {
+  glyphs.forEach(function (el, i) {
+    // 临时清除transform量原始盒子
+    var prev = el.style.transform;
+    el.style.transform = 'translate(-50%,-50%)';
+    var r = el.getBoundingClientRect();
+    state[i].natW = r.width || 60;
+    state[i].natH = r.height || 100;
+    el.style.transform = prev;
+  });
+}
+// 字体就绪后测量
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(function () { setTimeout(measureGlyphs, 60); });
+}
+setTimeout(measureGlyphs, 400);
+window.addEventListener('resize', function () { setTimeout(measureGlyphs, 60); });
+
 // ================= 音频 =================
 var audioOn = false, ctx, analyser, freq, master;
-var barCount = 0, inBreak = false;
-var kickPulse = 0; // 踢鼓瞬间脉冲，砸格子用
+var inBreak = false, kickPulse = 0;
 
 function startAudio() {
   ctx = new (window.AudioContext || window.webkitAudioContext)();
-  master = ctx.createGain();
-  master.gain.value = 0.7;
+  master = ctx.createGain(); master.gain.value = 0.7;
   analyser = ctx.createAnalyser();
-  analyser.fftSize = 128;
-  analyser.smoothingTimeConstant = 0.5;
-  master.connect(analyser);
-  analyser.connect(ctx.destination);
+  analyser.fftSize = 128; analyser.smoothingTimeConstant = 0.5;
+  master.connect(analyser); analyser.connect(ctx.destination);
   freq = new Uint8Array(analyser.frequencyBinCount);
 
-  var noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
-  var d = noiseBuf.getChannelData(0);
+  var nb = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+  var d = nb.getChannelData(0);
   for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
 
   function kick(t) {
     var o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(160, t);
+    o.type = 'sine'; o.frequency.setValueAtTime(160, t);
     o.frequency.exponentialRampToValueAtTime(45, t + 0.11);
-    g.gain.setValueAtTime(1.0, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
-    o.connect(g); g.connect(master);
-    o.start(t); o.stop(t + 0.3);
-    // 视觉脉冲（提前排的音符，延迟到发声时刻触发）
+    g.gain.setValueAtTime(1.0, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.3);
     setTimeout(function () { kickPulse = 1; }, Math.max(0, (t - ctx.currentTime) * 1000));
   }
   function hat(t, loud) {
     var s = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
-    s.buffer = noiseBuf;
-    f.type = 'highpass'; f.frequency.value = 7000;
-    g.gain.setValueAtTime(loud ? 0.32 : 0.16, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-    s.connect(f); f.connect(g); g.connect(master);
-    s.start(t); s.stop(t + 0.06);
+    s.buffer = nb; f.type = 'highpass'; f.frequency.value = 7000;
+    g.gain.setValueAtTime(loud ? 0.32 : 0.16, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 0.06);
   }
   function snare(t) {
     var s = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
-    s.buffer = noiseBuf;
-    f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.8;
-    g.gain.setValueAtTime(0.5, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
-    s.connect(f); f.connect(g); g.connect(master);
-    s.start(t); s.stop(t + 0.18);
+    s.buffer = nb; f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.8;
+    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 0.18);
   }
   function bass(t, f0, dur) {
     var o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
-    o.type = 'sawtooth'; o.frequency.value = f0;
-    lp.type = 'lowpass'; lp.frequency.value = 480;
-    g.gain.setValueAtTime(0.15, t);
-    g.gain.setValueAtTime(0.15, t + dur - 0.03);
+    o.type = 'sawtooth'; o.frequency.value = f0; lp.type = 'lowpass'; lp.frequency.value = 480;
+    g.gain.setValueAtTime(0.15, t); g.gain.setValueAtTime(0.15, t + dur - 0.03);
     g.gain.linearRampToValueAtTime(0.0001, t + dur);
-    o.connect(lp); lp.connect(g); g.connect(master);
-    o.start(t); o.stop(t + dur);
+    o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + dur);
   }
 
-  var next = ctx.currentTime + 0.1;
-  var step = 0;
-  var bassline = [55, 55, 82.4, 55, 65.4, 55, 49, 61.7];
+  var next = ctx.currentTime + 0.1, step = 0;
+  var bl = [55, 55, 82.4, 55, 65.4, 55, 49, 61.7];
   setInterval(function () {
     if (!audioOn || ctx.state !== 'running') return;
     var s16 = (60 / P.bpm) / 4;
     while (next < ctx.currentTime + 0.12) {
-      var bar = Math.floor(step / 16);
-      var beat = Math.floor(step / 4) % 4;
-      var sub = step % 4;
-      // 每8小节休止2小节：只留镲，字塌下去露出骨架
-      var breakBar = (bar % 8) >= 6;
-      if (sub === 0) {
-        barCount = bar;
-        inBreak = breakBar;
-      }
-      if (!breakBar) {
+      var bar = Math.floor(step / 16), beat = Math.floor(step / 4) % 4, sub = step % 4;
+      var br = (bar % 8) >= 6;
+      if (sub === 0) inBreak = br;
+      if (!br) {
         if (sub === 0) kick(next);
         if (sub === 0 && (beat === 1 || beat === 3)) snare(next);
-        if (sub === 0) bass(next, bassline[Math.floor(step / 8) % 8], s16 * 3.5);
+        if (sub === 0) bass(next, bl[Math.floor(step / 8) % 8], s16 * 3.5);
       }
-      if (sub === 2) hat(next, breakBar);
-      next += s16;
-      step++;
+      if (sub === 2) hat(next, br);
+      next += s16; step++;
     }
   }, 24);
 }
 
 // ================= 渲染 =================
-var lastTag = 0;
-
 function frameLoop(t) {
+  if (audioOn && ctx.state === 'running') analyser.getByteFrequencyData(freq);
+  kickPulse *= 0.86;
+  var playing = audioOn && ctx.state === 'running';
+  var skeleton = playing && inBreak;
+
   var i, s, target;
 
-  if (audioOn && ctx.state === 'running') analyser.getByteFrequencyData(freq);
-  kickPulse *= 0.86; // 脉冲衰减
-
-  var playing = audioOn && ctx.state === 'running';
-  var skeleton = playing && inBreak; // 休止段：骨架状态
-
+  // —— 第一遍：更新每个字的能量v、列宽flex ——
   for (i = 0; i < N; i++) {
     s = state[i];
-
-    // —— 卡机：随机冻结一段时间，冻结期什么都不更新 ——
-    if (playing && !skeleton && s.stuckUntil < t && Math.random() < P.stuck) {
-      s.stuckUntil = t + 600 + Math.random() * 1900;
-    }
+    if (playing && !skeleton && s.stuckUntil < t && Math.random() < P.stuck)
+      s.stuckUntil = t + 500 + Math.random() * 1800;
     var stuck = s.stuckUntil > t;
+    if (stuck) continue;
 
-    if (!stuck) {
-      if (playing && !skeleton) {
-        target = (freq[s.band] / 255) * P.sens;
-        if (target > 1) target = 1;
-      } else if (skeleton) {
-        target = 0.02; // 塌下去
-      } else {
-        target = 0.10 + 0.09 * (0.5 + 0.5 * Math.sin(t * 0.001 * s.speed + s.phase));
-      }
-      s.v += (target > s.v ? P.atk : P.rel) * (target - s.v);
-
-      if (s.isCN) {
-        s.el.style.fontVariationSettings = "'wght' " + Math.round(200 + 700 * s.v);
-      } else {
-        s.el.style.fontVariationSettings =
-          "'wght' " + Math.round(P.wMin + (P.wMax - P.wMin) * s.v) +
-          ", 'wdth' " + Math.round(75 + P.wd * s.v);
-      }
-      s.el.style.transform = 'scaleY(' + (1 + P.sy * s.v) + ')';
-      s.el.style.opacity = skeleton ? 0.07 : 1;
-
-      // —— 格子跟着能量变宽窄，踢鼓瞬间再砸一下 ——
-      var f = 1 + P.grid * s.v * 0.9 + (s.band < 12 ? kickPulse * P.grid * 0.5 : 0);
-      s.cellFlex += 0.3 * (f - s.cellFlex);
-      s.cell.style.flexGrow = s.cellFlex.toFixed(3);
+    if (playing && !skeleton) {
+      target = (freq[s.band] / 255) * P.sens; if (target > 1) target = 1;
+    } else if (skeleton) {
+      target = 0.0;
+    } else {
+      target = 0.12 + 0.10 * (0.5 + 0.5 * Math.sin(t * 0.001 * s.speed + s.phase));
     }
+    s.v += (target > s.v ? P.atk : P.rel) * (target - s.v);
 
-    // 骨架线和角标
-    s.cell.style.borderColor = skeleton ? 'rgba(17,17,17,0.55)'
-      : (playing ? 'rgba(17,17,17,0.06)' : 'rgba(17,17,17,0.14)');
+    // 列宽：基准 + 能量撑开，踢鼓砸低频列
+    var baseW = parseFloat(s.cell.dataset.w);
+    var wTarget = baseW * (1 + P.grid * 0.55 * s.v + (s.band < 12 ? kickPulse * P.grid * 0.35 : 0));
+    s.wCur += 0.35 * (wTarget - s.wCur);
+    s.cell.style.flexGrow = s.wCur.toFixed(3);
   }
 
-  // 行高也随全局能量微动
+  // 行高随低频整体起伏
   if (playing && !skeleton) {
     var low = (freq[2] + freq[4] + freq[6]) / (3 * 255);
     for (i = 0; i < rowState.length; i++) {
       var r = rowState[i];
-      var wob = 1 + P.grid * 0.25 * low * Math.sin(t * 0.002 + i * 1.7);
-      r.el.style.flexGrow = (r.base * wob).toFixed(3);
+      r.el.style.flexGrow = (r.base * (1 + P.grid * 0.22 * low * Math.sin(t * 0.002 + i * 1.7))).toFixed(3);
     }
   }
 
-  // 角标文本：每200ms更新一次，骨架时才显眼
-  if (t - lastTag > 200) {
-    lastTag = t;
-    var fw = frame.clientWidth, fh = frame.clientHeight;
-    for (i = 0; i < N; i++) {
-      s = state[i];
-      var showTag = skeleton || !playing;
-      s.tag.style.opacity = skeleton ? 0.9 : (playing ? 0 : 0.35);
-      if (showTag) {
-        s.tag.textContent =
-          Math.round(s.cell.clientWidth / fw * 100) + '_' +
-          Math.round(s.cell.clientHeight / fh * 100);
-      }
+  // —— 第二遍：量格子实际尺寸，把字非均匀拉满 ——
+  // （所有flex已写完，这里读取会触发一次统一reflow）
+  for (i = 0; i < N; i++) {
+    s = state[i];
+    var cw = s.cell.clientWidth, ch = s.cell.clientHeight;
+    if (cw < 2 || ch < 2) continue;
+
+    var pad = 0.9;  // 留一点边，字不撑破格子线
+    var sx = (cw * pad) / s.natW;
+    var sy = (ch * pad) / s.natH;
+
+    // 笔画粗细 & 字宽轴仍随能量走（质感层）
+    var wght = Math.round(P.wghtBase - 200 + (P.wghtAmp + 200) * s.v);
+    if (s.isCN) {
+      s.el.style.fontVariationSettings = "'wght' " + Math.round(300 + 500 * s.v);
+    } else {
+      s.el.style.fontVariationSettings =
+        "'wght' " + wght + ", 'wdth' " + Math.round(100 + P.wd * s.v * 0.5);
     }
+
+    s.el.style.opacity = skeleton ? 0 : 1;
+    s.el.style.transform = 'translate(-50%,-50%) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
+
+    // 骨架线：休止时显现
+    s.cell.style.boxShadow = skeleton ? 'inset 0 0 0 1px rgba(17,17,17,0.5)' : 'none';
   }
 
   requestAnimationFrame(frameLoop);
 }
 requestAnimationFrame(frameLoop);
 
-// ================= 点击开/关声音 =================
+// ================= 点击开/关 =================
 var hint = document.getElementById('hint');
-
 document.body.addEventListener('click', function (e) {
   if (e.target.closest('.debug')) return;
-  if (!audioOn) {
-    startAudio();
-    audioOn = true;
-    hint.textContent = '再点暂停 CLICK TO PAUSE';
-    return;
-  }
-  if (ctx.state === 'running') {
-    ctx.suspend().then(function () {
-      hint.textContent = '已暂停 点击继续 PAUSED';
-    });
-  } else {
-    ctx.resume().then(function () {
-      hint.textContent = '再点暂停 CLICK TO PAUSE';
-    });
-  }
+  if (!audioOn) { startAudio(); audioOn = true; hint.textContent = '再点暂停 CLICK TO PAUSE'; return; }
+  if (ctx.state === 'running') ctx.suspend().then(function () { hint.textContent = '已暂停 点击继续 PAUSED'; });
+  else ctx.resume().then(function () { hint.textContent = '再点暂停 CLICK TO PAUSE'; });
 });
 
 // ================= 调试面板 =================
@@ -427,18 +369,13 @@ document.addEventListener('keydown', function (e) {
   if (e.key === 'd' || e.key === 'D') dbg.classList.toggle('on');
 });
 function bind(id, key) {
-  var input = document.getElementById('p-' + id);
-  var label = document.getElementById('v-' + id);
-  input.value = P[key];
-  label.textContent = P[key];
-  input.addEventListener('input', function () {
-    P[key] = parseFloat(input.value);
-    label.textContent = input.value;
-  });
+  var input = document.getElementById('p-' + id), label = document.getElementById('v-' + id);
+  input.value = P[key]; label.textContent = P[key];
+  input.addEventListener('input', function () { P[key] = parseFloat(input.value); label.textContent = input.value; });
 }
 bind('sens', 'sens'); bind('atk', 'atk'); bind('rel', 'rel');
 bind('grid', 'grid'); bind('stuck', 'stuck');
-bind('wmax', 'wMax'); bind('wd', 'wd'); bind('bpm', 'bpm');
+bind('wght', 'wghtAmp'); bind('wd', 'wd'); bind('bpm', 'bpm');
 </script>
 </body>
 </html>
