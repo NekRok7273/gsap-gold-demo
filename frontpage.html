@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
 <title>CULTURE HIDES HERE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,10 +38,7 @@
     overflow: hidden;
     min-width: 0;
   }
-  .cell.inv { background: #111; }
-
-  /* 骨架模式：黑块隐去，只剩线框 */
-  .frame.skel .cell.inv { background: transparent; }
+  /* 黑块与字全部由canvas绘制，DOM格子保持透明，避免浏览器深色模式染色 */
 
   /* 字画在这块canvas上，盖在格子之上 */
   #ink {
@@ -132,13 +130,13 @@
 // ================= 参数 =================
 var P = {
   bpm: 134,
-  grid: 1.7,     // 格子摆幅
+  grid: 0.9,     // 格子摆幅（1.7太猛，格子尺寸差太悬殊会乱）
   sens: 1.7,
   atk: 0.6,
   rel: 0.14,
   wBase: 420,    // 笔画基准（降下来，不再糊成一团）
   wAmp: 360,     // 笔画随能量增粗
-  pad: 0.99,     // 墨迹填满格子的比例
+  pad: 0.94,     // 墨迹填满格子的比例（留一点边，字不互压）
   stuck: 0.005
 };
 
@@ -296,12 +294,15 @@ function frameLoop(t) {
       R[i].el.style.flexGrow = (R[i].base * (1 + P.grid * 0.28 * low * Math.sin(t * 0.002 + i * 1.7))).toFixed(3);
   }
 
-  // 第二遍：量格子实际尺寸，canvas把墨迹抻满
+  // 第二遍：canvas自己画底、画黑块、把每个字裁进格子里抻满
   var fr = frame.getBoundingClientRect();
   var W = frame.clientWidth, H = frame.clientHeight;
   if (canvas.width !== Math.round(W * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, W, H);
+
+  // 底色由canvas画（浏览器深色模式管不到canvas像素）
+  ctx.fillStyle = '#f2f0eb';
+  ctx.fillRect(0, 0, W, H);
 
   for (i = 0; i < N; i++) {
     c = C[i];
@@ -317,6 +318,9 @@ function frameLoop(t) {
       continue;
     }
 
+    // 黑格子的底
+    if (c.inv) { ctx.fillStyle = '#111'; ctx.fillRect(cx, cy, cw, ch); }
+
     var weight = c.isCN ? Math.round(260 + 520 * c.v)
                         : Math.round(P.wBase + P.wAmp * c.v);
     var mk = inkMetrics(c.ch, c.isCN, weight);
@@ -324,13 +328,17 @@ function frameLoop(t) {
     var sy = (ch * P.pad) / mk.h;
 
     ctx.save();
+    // 关键：裁进格子，字再大也不会溢出去糊到别人（参考图那种被框切掉的效果）
+    ctx.beginPath();
+    ctx.rect(cx, cy, cw, ch);
+    ctx.clip();
+
     ctx.translate(cx + cw / 2, cy + ch / 2);
     ctx.scale(sx, sy);
     ctx.font = weight + " 100px " + mk.fam;
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
     ctx.fillStyle = c.inv ? '#f2f0eb' : '#111';
-    // 墨迹中心对齐格子中心
     ctx.fillText(c.ch, (mk.l - mk.r) / 2, (mk.a - mk.d) / 2);
     ctx.restore();
   }
