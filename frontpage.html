@@ -17,10 +17,11 @@
   /* 全屏画布：布 + 幽灵 + 字，一次画完，从后往前叠 */
   #stage { position: fixed; inset: 0; display: block; }
 
-  /* 字的布局网格：铺满大半屏，留一点边呼吸。只用来量位置，本身透明 */
+  /* 字的布局网格：居中一块（回到原来的尺寸），背景/幽灵才是全屏。只用来量位置，本身透明 */
   #grid {
     position: fixed;
-    inset: 5vh 5vw;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    height: 90vh; width: min(95vw, 74vh);
     display: flex; flex-direction: column;
     pointer-events: none; opacity: 0;
   }
@@ -117,9 +118,9 @@ var P = {
   wBase: 420, wAmp: 360, pad: 0.94, stuck: 0.005,
   weave: 1.0,   // 布织纹深浅
   fold: 0.8,    // 布光影起伏
-  ghost: 0.7,   // 幽灵浓度
+  ghost: 1.3,   // 幽灵浓度（先调到看得见，再用面板往回收）
   gspd: 16,     // 幽灵横移速度（秒/全程）
-  gflk: 0.5     // 幽灵忽隐忽现程度
+  gflk: 0.4     // 幽灵忽隐忽现程度
 };
 
 var stage = document.getElementById('stage');
@@ -289,7 +290,7 @@ function loop(t) {
     var edge = Math.min(1, Math.min((gx + gw) / (W * 0.35), (W - gx) / (W * 0.35)));
     edge = Math.max(0, edge);
     var flick = 1 - P.gflk * (0.5 + 0.5 * Math.sin(t * 0.004 + Math.sin(t * 0.0013) * 3)); // 忽隐忽现
-    ctx.globalAlpha = Math.max(0, 0.22 * P.ghost * edge * flick);
+    ctx.globalAlpha = Math.max(0, 0.30 * P.ghost * edge * flick);
     ctx.drawImage(ghostImg, gx, gy, gw, gh);
     ctx.globalAlpha = 1;
   }
