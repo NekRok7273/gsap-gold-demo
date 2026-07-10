@@ -7,53 +7,30 @@
 <title>CULTURE HIDES HERE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@100..1000&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&text=这里藏着文化&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #efe9dc;
+    font-family: 'Roboto Flex', 'Arial Black', sans-serif; cursor: pointer; }
 
-  html, body {
-    height: 100%;
-    background: #f2f0eb;
-    overflow: hidden;
-    font-family: 'Roboto Flex', 'Arial Black', sans-serif;
-  }
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
+  /* 全屏画布：布 + 幽灵 + 字，一次画完，从后往前叠 */
+  #stage { position: fixed; inset: 0; display: block; }
 
-  .frame {
-    position: relative;
-    height: 90vh;
-    width: min(95vw, 74vh);
-    display: flex;
-    flex-direction: column;
+  /* 字的布局网格：铺满大半屏，留一点边呼吸。只用来量位置，本身透明 */
+  #grid {
+    position: fixed;
+    inset: 5vh 5vw;
+    display: flex; flex-direction: column;
+    pointer-events: none; opacity: 0;
   }
-  .row { display: flex; min-height: 0; }
-  .cell {
-    position: relative;
-    overflow: hidden;
-    min-width: 0;
-  }
-  /* 黑块与字全部由canvas绘制，DOM格子保持透明，避免浏览器深色模式染色 */
-
-  /* 字画在这块canvas上，盖在格子之上 */
-  #ink {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
+  .row { display: flex; min-height: 0; flex: 1; }
+  .cell { flex: 1; min-width: 0; }
 
   .hint {
-    position: fixed;
-    bottom: 3vh; left: 50%;
-    transform: translateX(-50%);
-    font-size: 11px; letter-spacing: 4px; color: #999;
-    animation: breathe 2.4s ease-in-out infinite;
-    user-select: none;
+    position: fixed; bottom: 3vh; left: 50%; transform: translateX(-50%);
+    font-size: 11px; letter-spacing: 4px; color: #8a7f66;
+    animation: breathe 2.4s ease-in-out infinite; user-select: none; z-index: 5;
   }
   @keyframes breathe { 0%,100%{opacity:.35} 50%{opacity:.9} }
 
@@ -62,10 +39,11 @@
     background: rgba(17,17,17,0.92); color: #eee;
     font-family: monospace; font-size: 11px;
     padding: 14px; border-radius: 6px;
-    display: none; z-index: 99; width: 240px; cursor: default;
+    display: none; z-index: 99; width: 250px; cursor: default;
+    max-height: 94vh; overflow: auto;
   }
   .debug.on { display: block; }
-  .debug label { display: block; margin-top: 8px; color: #999; }
+  .debug label { display: block; margin-top: 7px; color: #999; }
   .debug input[type=range] { width: 100%; }
   .debug .val { color: #fff; float: right; }
   .debug .tip { color:#666; margin-top:10px; line-height:1.5; }
@@ -73,365 +51,283 @@
 </head>
 <body>
 
-<!-- 阅读顺序交错：英文连读 CULTURE HIDES HERE，中文连读 这里藏着文化。cell只管布局和黑白底，字画在canvas上 -->
-<div class="frame" id="frame">
+<canvas id="stage"></canvas>
+
+<!-- 字网格：英文连读 CULTURE HIDES HERE，中文连读 这里藏着文化。无黑块，字直接压在布上 -->
+<div id="grid">
   <div class="row" data-h="1.35">
-    <div class="cell"     data-w="1.3"  data-ch="C"></div>
-    <div class="cell"     data-w="1.0"  data-ch="U"></div>
-    <div class="cell inv" data-w="1.15" data-ch="这" data-cn="1"></div>
+    <div class="cell" data-w="1.3" data-ch="C"></div>
+    <div class="cell" data-w="1.0" data-ch="U"></div>
+    <div class="cell" data-w="1.15" data-ch="这" data-cn="1"></div>
   </div>
   <div class="row" data-h="1.0">
-    <div class="cell inv" data-w="0.85" data-ch="L"></div>
-    <div class="cell"     data-w="1.35" data-ch="T"></div>
-    <div class="cell inv" data-w="1.0"  data-ch="里" data-cn="1"></div>
-    <div class="cell"     data-w="0.7"  data-ch="U"></div>
+    <div class="cell" data-w="0.85" data-ch="L"></div>
+    <div class="cell" data-w="1.35" data-ch="T"></div>
+    <div class="cell" data-w="1.0" data-ch="里" data-cn="1"></div>
+    <div class="cell" data-w="0.7" data-ch="U"></div>
   </div>
   <div class="row" data-h="0.92">
-    <div class="cell"     data-w="0.75" data-ch="R"></div>
-    <div class="cell"     data-w="1.2"  data-ch="E"></div>
-    <div class="cell inv" data-w="1.0"  data-ch="藏" data-cn="1"></div>
-    <div class="cell"     data-w="0.65" data-ch="H"></div>
-    <div class="cell"     data-w="0.45" data-ch="I"></div>
+    <div class="cell" data-w="0.75" data-ch="R"></div>
+    <div class="cell" data-w="1.2" data-ch="E"></div>
+    <div class="cell" data-w="1.0" data-ch="藏" data-cn="1"></div>
+    <div class="cell" data-w="0.65" data-ch="H"></div>
+    <div class="cell" data-w="0.45" data-ch="I"></div>
   </div>
   <div class="row" data-h="0.92">
-    <div class="cell"     data-w="1.1"  data-ch="D"></div>
-    <div class="cell"     data-w="0.9"  data-ch="E"></div>
-    <div class="cell inv" data-w="0.95" data-ch="着" data-cn="1"></div>
-    <div class="cell"     data-w="1.15" data-ch="S"></div>
-    <div class="cell inv" data-w="1.0"  data-ch="文" data-cn="1"></div>
+    <div class="cell" data-w="1.1" data-ch="D"></div>
+    <div class="cell" data-w="0.9" data-ch="E"></div>
+    <div class="cell" data-w="0.95" data-ch="着" data-cn="1"></div>
+    <div class="cell" data-w="1.15" data-ch="S"></div>
+    <div class="cell" data-w="1.0" data-ch="文" data-cn="1"></div>
   </div>
   <div class="row" data-h="1.5">
-    <div class="cell"     data-w="1.0"  data-ch="H"></div>
-    <div class="cell"     data-w="0.9"  data-ch="E"></div>
-    <div class="cell inv" data-w="1.1"  data-ch="化" data-cn="1"></div>
-    <div class="cell"     data-w="0.85" data-ch="R"></div>
-    <div class="cell"     data-w="1.15" data-ch="E"></div>
+    <div class="cell" data-w="1.0" data-ch="H"></div>
+    <div class="cell" data-w="0.9" data-ch="E"></div>
+    <div class="cell" data-w="1.1" data-ch="化" data-cn="1"></div>
+    <div class="cell" data-w="0.85" data-ch="R"></div>
+    <div class="cell" data-w="1.15" data-ch="E"></div>
   </div>
-  <canvas id="ink"></canvas>
 </div>
 
 <div class="hint" id="hint">点击开启声音 CLICK FOR SOUND</div>
 
-<div class="debug on" id="debug">
+<div class="debug" id="debug">
   <b>DEBUG</b> (按 D 收起)
   <label>节拍 BPM <span class="val" id="v-bpm"></span><input type="range" id="p-bpm" min="80" max="180" step="1"></label>
-  <label>格子摆幅（大开大合）<span class="val" id="v-grid"></span><input type="range" id="p-grid" min="0" max="3" step="0.1"></label>
-  <label>灵敏度 <span class="val" id="v-sens"></span><input type="range" id="p-sens" min="0.5" max="3" step="0.1"></label>
-  <label>起跳速度 <span class="val" id="v-atk"></span><input type="range" id="p-atk" min="0.1" max="0.9" step="0.05"></label>
-  <label>回落速度 <span class="val" id="v-rel"></span><input type="range" id="p-rel" min="0.03" max="0.5" step="0.01"></label>
-  <label>笔画基准粗细 <span class="val" id="v-wb"></span><input type="range" id="p-wb" min="200" max="800" step="20"></label>
-  <label>笔画粗细幅度 <span class="val" id="v-wa"></span><input type="range" id="p-wa" min="0" max="500" step="20"></label>
-  <label>贴合度 <span class="val" id="v-pad"></span><input type="range" id="p-pad" min="0.85" max="1.05" step="0.01"></label>
-  <label>卡机频率 <span class="val" id="v-stuck"></span><input type="range" id="p-stuck" min="0" max="0.02" step="0.001"></label>
-  <label>布·强度 <span class="val" id="v-cloth"></span><input type="range" id="p-cloth" min="0" max="2" step="0.1"></label>
-  <label>档案·强度 <span class="val" id="v-archive"></span><input type="range" id="p-archive" min="0" max="2" step="0.1"></label>
-  <label>档案·间隔秒 <span class="val" id="v-archiveGap"></span><input type="range" id="p-archiveGap" min="0.6" max="6" step="0.2"></label>
+  <label>字·摆幅 <span class="val" id="v-grid"></span><input type="range" id="p-grid" min="0" max="2.5" step="0.1"></label>
+  <label>字·灵敏度 <span class="val" id="v-sens"></span><input type="range" id="p-sens" min="0.5" max="3" step="0.1"></label>
+  <label>字·起跳 <span class="val" id="v-atk"></span><input type="range" id="p-atk" min="0.1" max="0.9" step="0.05"></label>
+  <label>字·回落 <span class="val" id="v-rel"></span><input type="range" id="p-rel" min="0.03" max="0.5" step="0.01"></label>
+  <label>字·基准粗细 <span class="val" id="v-wb"></span><input type="range" id="p-wb" min="200" max="800" step="20"></label>
+  <label>字·粗细幅度 <span class="val" id="v-wa"></span><input type="range" id="p-wa" min="0" max="500" step="20"></label>
+  <label>字·贴合度 <span class="val" id="v-pad"></span><input type="range" id="p-pad" min="0.85" max="1.05" step="0.01"></label>
+  <label>字·卡机 <span class="val" id="v-stuck"></span><input type="range" id="p-stuck" min="0" max="0.02" step="0.001"></label>
+  <label>布·织纹深浅 <span class="val" id="v-weave"></span><input type="range" id="p-weave" min="0" max="2" step="0.1"></label>
+  <label>布·光影起伏 <span class="val" id="v-fold"></span><input type="range" id="p-fold" min="0" max="2" step="0.1"></label>
+  <label>幽灵·浓度 <span class="val" id="v-ghost"></span><input type="range" id="p-ghost" min="0" max="1.5" step="0.05"></label>
+  <label>幽灵·速度 <span class="val" id="v-gspd"></span><input type="range" id="p-gspd" min="4" max="40" step="1"></label>
+  <label>幽灵·忽隐忽现 <span class="val" id="v-gflk"></span><input type="range" id="p-gflk" min="0" max="1" step="0.05"></label>
   <div class="tip">点画面开/关声音 · 拖滑块实时生效</div>
 </div>
 
 <script>
 // ================= 参数 =================
 var P = {
-  bpm: 134,
-  grid: 0.9,     // 格子摆幅（1.7太猛，格子尺寸差太悬殊会乱）
-  sens: 1.7,
-  atk: 0.6,
-  rel: 0.14,
-  wBase: 420,    // 笔画基准（降下来，不再糊成一团）
-  wAmp: 360,     // 笔画随能量增粗
-  pad: 0.94,     // 墨迹填满格子的比例（留一点边，字不互压）
-  stuck: 0.005,
-  // —— 背景两层 ——
-  cloth: 0.6,    // 布：几乎察觉不到，只在低音最沉时起伏一下
-  archive: 0.8,  // 档案：残影浮现的强度
-  archiveGap: 2.6 // 档案：每次浮现的间隔秒数（偶尔，不是一直）
+  bpm: 134, grid: 0.9, sens: 1.7, atk: 0.6, rel: 0.14,
+  wBase: 420, wAmp: 360, pad: 0.94, stuck: 0.005,
+  weave: 1.0,   // 布织纹深浅
+  fold: 0.8,    // 布光影起伏
+  ghost: 0.7,   // 幽灵浓度
+  gspd: 16,     // 幽灵横移速度（秒/全程）
+  gflk: 0.5     // 幽灵忽隐忽现程度
 };
 
-// ================= 结构 =================
-var frame = document.getElementById('frame');
-var canvas = document.getElementById('ink');
-var ctx = canvas.getContext('2d');
-var cellsEls = Array.prototype.slice.call(frame.querySelectorAll('.cell'));
-var rowsEls = Array.prototype.slice.call(frame.querySelectorAll('.row'));
+var stage = document.getElementById('stage');
+var ctx = stage.getContext('2d');
+var grid = document.getElementById('grid');
+var cellsEls = [].slice.call(grid.querySelectorAll('.cell'));
 
 var C = cellsEls.map(function (el) {
-  return {
-    el: el,
-    ch: el.dataset.ch,
-    isCN: el.dataset.cn === '1',
-    inv: el.classList.contains('inv'),
-    baseW: parseFloat(el.dataset.w),
-    wCur: parseFloat(el.dataset.w),
-    v: 0,
-    band: 0,
-    phase: Math.random() * Math.PI * 2,
-    speed: 0.35 + Math.random() * 0.7,
-    stuckUntil: 0
-  };
+  return { el: el, ch: el.dataset.ch, isCN: el.dataset.cn === '1',
+    v: 0, band: 0, phase: Math.random() * 6.28, speed: 0.35 + Math.random() * 0.7, stuckUntil: 0 };
 });
-var R = rowsEls.map(function (el) { return { el: el, base: parseFloat(el.dataset.h) }; });
 var N = C.length;
-
-// 频段：格子越大吃越低频
 (function () {
-  var ord = C.map(function (c, i) {
-    return { i: i, size: parseFloat(c.el.parentNode.dataset.h) * c.baseW };
-  });
+  var ord = C.map(function (c, i) { return { i: i, size: parseFloat(c.el.parentNode.dataset.h) * parseFloat(c.el.dataset.w) }; });
   ord.sort(function (a, b) { return b.size - a.size; });
   ord.forEach(function (o, rank) { C[o.i].band = Math.floor((rank / (N - 1)) * 0.6 * 63); });
 })();
 
-R.forEach(function (r) { r.el.style.flexGrow = r.base; });
-C.forEach(function (c) { c.el.style.flexGrow = c.baseW; });
-
-// —— 墨迹测量（离屏canvas，读真实黑形状的宽高，不含行高留白）——
-var mcv = document.createElement('canvas');
-var mctx = mcv.getContext('2d');
+// —— 墨迹度量 ——
+var mcv = document.createElement('canvas'), mctx = mcv.getContext('2d');
 function inkMetrics(ch, isCN, weight) {
-  var fam = isCN ? "'Noto Sans SC','Microsoft YaHei',sans-serif"
-                 : "'Roboto Flex','Arial Black',sans-serif";
-  mctx.font = weight + " 100px " + fam;
-  mctx.textBaseline = 'alphabetic';
-  mctx.textAlign = 'left';
+  var fam = isCN ? "'Noto Sans SC','Microsoft YaHei',sans-serif" : "'Roboto Flex','Arial Black',sans-serif";
+  mctx.font = weight + " 100px " + fam; mctx.textBaseline = 'alphabetic'; mctx.textAlign = 'left';
   var m = mctx.measureText(ch);
-  var l = m.actualBoundingBoxLeft, r = m.actualBoundingBoxRight;
-  var a = m.actualBoundingBoxAscent, d = m.actualBoundingBoxDescent;
+  var l = m.actualBoundingBoxLeft, r = m.actualBoundingBoxRight, a = m.actualBoundingBoxAscent, d = m.actualBoundingBoxDescent;
   return { l: l, r: r, a: a, d: d, w: (l + r) || 60, h: (a + d) || 90, fam: fam };
 }
 
-// ================= 音频 =================
-var audioOn = false, actx, analyser, freq, master;
-var inBreak = false, kickPulse = 0;
+// ================= 布：织纹贴图（生成一次）=================
+var weaveTile = null;
+function buildWeave() {
+  var s = 6; // 线距
+  var tile = document.createElement('canvas'); tile.width = s * 8; tile.height = s * 8;
+  var x = tile.getContext('2d');
+  var W = tile.width, H = tile.height;
+  x.fillStyle = '#efe9dc'; x.fillRect(0, 0, W, H);
+  var img = x.getImageData(0, 0, W, H), dt = img.data;
+  for (var j = 0; j < H; j++) {
+    for (var i = 0; i < W; i++) {
+      var k = (j * W + i) * 4;
+      // 经纬交织：over/under 的明暗棋盘 + 细噪点
+      var over = ((Math.floor(i / s) + Math.floor(j / s)) % 2) === 0;
+      var thread = (i % s === 0 || j % s === 0) ? -8 : 0;   // 织线的暗缝
+      var shade = (over ? 7 : -7) + thread + (Math.random() - 0.5) * 8;
+      dt[k] += shade * 1.1; dt[k + 1] += shade * 1.0; dt[k + 2] += shade * 0.8;
+    }
+  }
+  x.putImageData(img, 0, 0);
+  weaveTile = tile;
+}
+buildWeave();
 
+// ================= 幽灵：衣服廓形（生成一次，已虚化）=================
+var ghostImg = null;
+function buildGhost() {
+  var w = 300, h = 460;
+  var g = document.createElement('canvas'); g.width = w; g.height = h;
+  var x = g.getContext('2d');
+  var cx = w / 2;
+  x.fillStyle = '#3a3a3a';
+  x.beginPath();
+  x.moveTo(cx - 28, 46);                          // 领口左
+  x.lineTo(cx - 98, 96);                           // 肩线左
+  x.lineTo(cx - 74, 158);                          // 腋下左
+  x.lineTo(cx - 52, 250);                          // 腰左
+  x.quadraticCurveTo(cx - 128, 372, cx - 116, h - 24); // 下摆外扩左（垂坠）
+  x.lineTo(cx + 116, h - 24);                       // 下摆底
+  x.quadraticCurveTo(cx + 128, 372, cx + 52, 250); // 下摆外扩右
+  x.lineTo(cx + 74, 158);                           // 腋下右
+  x.lineTo(cx + 98, 96);                            // 肩线右
+  x.lineTo(cx + 28, 46);                            // 领口右
+  x.closePath();
+  x.fill();
+  // 虚化，做成抓不住的残影
+  var b = document.createElement('canvas'); b.width = w; b.height = h;
+  var bx = b.getContext('2d');
+  bx.filter = 'blur(7px)';
+  bx.drawImage(g, 0, 0);
+  ghostImg = b;
+}
+buildGhost();
+
+// ================= 音频 =================
+var audioOn = false, actx, analyser, freq, master, inBreak = false, kickPulse = 0;
 function startAudio() {
   actx = new (window.AudioContext || window.webkitAudioContext)();
   master = actx.createGain(); master.gain.value = 0.7;
-  analyser = actx.createAnalyser();
-  analyser.fftSize = 128; analyser.smoothingTimeConstant = 0.5;
+  analyser = actx.createAnalyser(); analyser.fftSize = 128; analyser.smoothingTimeConstant = 0.5;
   master.connect(analyser); analyser.connect(actx.destination);
   freq = new Uint8Array(analyser.frequencyBinCount);
-
   var nb = actx.createBuffer(1, actx.sampleRate * 0.5, actx.sampleRate);
-  var dd = nb.getChannelData(0);
-  for (var i = 0; i < dd.length; i++) dd[i] = Math.random() * 2 - 1;
-
-  function kick(t) {
-    var o = actx.createOscillator(), g = actx.createGain();
-    o.type = 'sine'; o.frequency.setValueAtTime(160, t);
-    o.frequency.exponentialRampToValueAtTime(45, t + 0.11);
-    g.gain.setValueAtTime(1.0, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+  var dd = nb.getChannelData(0); for (var i = 0; i < dd.length; i++) dd[i] = Math.random() * 2 - 1;
+  function kick(t) { var o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine';
+    o.frequency.setValueAtTime(160, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.11);
+    g.gain.setValueAtTime(1, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
     o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.3);
-    setTimeout(function () { kickPulse = 1; }, Math.max(0, (t - actx.currentTime) * 1000));
-  }
-  function hat(t, loud) {
-    var s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
-    s.buffer = nb; f.type = 'highpass'; f.frequency.value = 7000;
-    g.gain.setValueAtTime(loud ? 0.32 : 0.16, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-    s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 0.06);
-  }
-  function snare(t) {
-    var s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
-    s.buffer = nb; f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.8;
-    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
-    s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 0.18);
-  }
-  function bass(t, f0, dur) {
-    var o = actx.createOscillator(), g = actx.createGain(), lp = actx.createBiquadFilter();
+    setTimeout(function () { kickPulse = 1; }, Math.max(0, (t - actx.currentTime) * 1000)); }
+  function hat(t, l) { var s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
+    s.buffer = nb; f.type = 'highpass'; f.frequency.value = 7000; g.gain.setValueAtTime(l ? 0.32 : 0.16, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.05); s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 0.06); }
+  function snare(t) { var s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
+    s.buffer = nb; f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.8; g.gain.setValueAtTime(0.5, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.16); s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 0.18); }
+  function bass(t, f0, dur) { var o = actx.createOscillator(), g = actx.createGain(), lp = actx.createBiquadFilter();
     o.type = 'sawtooth'; o.frequency.value = f0; lp.type = 'lowpass'; lp.frequency.value = 480;
-    g.gain.setValueAtTime(0.15, t); g.gain.setValueAtTime(0.15, t + dur - 0.03);
-    g.gain.linearRampToValueAtTime(0.0001, t + dur);
-    o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + dur);
-  }
-
-  var next = actx.currentTime + 0.1, step = 0;
-  var bl = [55, 55, 82.4, 55, 65.4, 55, 49, 61.7];
+    g.gain.setValueAtTime(0.15, t); g.gain.setValueAtTime(0.15, t + dur - 0.03); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + dur); }
+  var next = actx.currentTime + 0.1, step = 0, bl = [55, 55, 82.4, 55, 65.4, 55, 49, 61.7];
   setInterval(function () {
     if (!audioOn || actx.state !== 'running') return;
     var s16 = (60 / P.bpm) / 4;
     while (next < actx.currentTime + 0.12) {
-      var bar = Math.floor(step / 16), beat = Math.floor(step / 4) % 4, sub = step % 4;
-      var br = (bar % 8) >= 6;
+      var bar = Math.floor(step / 16), beat = Math.floor(step / 4) % 4, sub = step % 4, br = (bar % 8) >= 6;
       if (sub === 0) inBreak = br;
-      if (!br) {
-        if (sub === 0) kick(next);
-        if (sub === 0 && (beat === 1 || beat === 3)) snare(next);
-        if (sub === 0) bass(next, bl[Math.floor(step / 8) % 8], s16 * 3.5);
-      }
+      if (!br) { if (sub === 0) kick(next); if (sub === 0 && (beat === 1 || beat === 3)) snare(next); if (sub === 0) bass(next, bl[Math.floor(step / 8) % 8], s16 * 3.5); }
       if (sub === 2) hat(next, br);
       next += s16; step++;
     }
   }, 24);
 }
 
-// ================= 背景两层：布(底) + 档案(中) =================
-var apparitions = [];   // 档案残影事件
-var lastAppear = 0;
-
-// 布：几张极淡的灰带缓慢漂移，只在低音沉时起伏。平时几乎看不见。
-function drawCloth(t, W, H, low) {
-  var amt = P.cloth;
-  if (amt <= 0) return;
-  var bands = 5;
-  for (var b = 0; b < bands; b++) {
-    var yy = ((b + 0.5) / bands) * H
-           + Math.sin(t * 0.00035 + b * 1.35) * H * 0.06 * (0.35 + low * 1.4);
-    var a = 0.055 * amt * (0.45 + low * 1.1);
-    var g = ctx.createLinearGradient(0, yy - H * 0.28, 0, yy + H * 0.28);
-    g.addColorStop(0, 'rgba(17,17,17,0)');
-    g.addColorStop(0.5, 'rgba(17,17,17,' + a.toFixed(3) + ')');
-    g.addColorStop(1, 'rgba(17,17,17,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, yy - H * 0.28, W, H * 0.56);
-  }
-}
-
-// 档案：偶尔浮现一段残影（软竖向拖影+内部条纹，暗示走动的人形/翻动），升起淡出。
-// 不用真实素材，纯生成的"类档案"，无版权。灰域中段，永不抢字。
-function drawArchive(t, W, H) {
-  var amt = P.archive;
-  // 偶尔生成一个残影事件
-  if (amt > 0 && t - lastAppear > P.archiveGap * 1000) {
-    lastAppear = t;
-    apparitions.push({
-      born: t,
-      life: 1500 + Math.random() * 1500,
-      x: (0.15 + Math.random() * 0.7) * W,
-      w: W * (0.10 + Math.random() * 0.16),
-      streaks: 3 + (Math.random() * 4 | 0),
-      seed: Math.random() * 1000
-    });
-    if (apparitions.length > 4) apparitions.shift();
-  }
-  for (var k = apparitions.length - 1; k >= 0; k--) {
-    var ap = apparitions[k];
-    var age = (t - ap.born) / ap.life;
-    if (age >= 1) { apparitions.splice(k, 1); continue; }
-    var env = Math.sin(age * Math.PI);          // 淡入淡出
-    var alpha = env * 0.20 * amt;               // 峰值也压在低透明，永不抢字
-    var yUp = (1 - age) * H * 0.10;             // 缓缓升起
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    // 软竖向拖影（人形/信号的残迹）
-    var gx = ctx.createLinearGradient(ap.x - ap.w / 2, 0, ap.x + ap.w / 2, 0);
-    gx.addColorStop(0, 'rgba(55,55,55,0)');
-    gx.addColorStop(0.5, 'rgba(55,55,55,1)');
-    gx.addColorStop(1, 'rgba(55,55,55,0)');
-    ctx.fillStyle = gx;
-    ctx.fillRect(ap.x - ap.w / 2, H * 0.08 + yUp, ap.w, H * 0.82);
-    // 内部竖条纹，像老影像的信号残留
-    for (var s = 0; s < ap.streaks; s++) {
-      var sx = ap.x - ap.w / 2 + (s + 0.5) / ap.streaks * ap.w
-             + Math.sin(t * 0.002 + ap.seed + s) * 3;
-      ctx.globalAlpha = alpha * (0.4 + 0.6 * Math.abs(Math.sin(ap.seed + s * 2)));
-      ctx.fillStyle = 'rgba(40,40,40,1)';
-      ctx.fillRect(sx, H * 0.1 + yUp, 1.2, H * 0.78);
-    }
-    ctx.restore();
-  }
-}
-
 // ================= 渲染 =================
 var dpr = Math.min(window.devicePixelRatio || 1, 2);
+var ghostX = -0.2;  // 幽灵横移进度 -0.2..1.2 循环
 
-function frameLoop(t) {
-  if (audioOn && actx.state === 'running') analyser.getByteFrequencyData(freq);
-  kickPulse *= 0.86;
+function loop(t) {
   var playing = audioOn && actx.state === 'running';
-  var skeleton = playing && inBreak;
-  frame.classList.toggle('skel', skeleton);
+  if (playing) analyser.getByteFrequencyData(freq);
+  kickPulse *= 0.86;
+  var low = playing ? (freq[2] + freq[4] + freq[6]) / (3 * 255) : 0;
 
-  var i, c, target;
-
-  // 第一遍：更新能量v与格子flex
-  for (i = 0; i < N; i++) {
-    c = C[i];
-    if (playing && !skeleton && c.stuckUntil < t && Math.random() < P.stuck)
-      c.stuckUntil = t + 500 + Math.random() * 1700;
-    if (c.stuckUntil > t) continue; // 卡机：这个格子不动
-
-    if (playing && !skeleton) {
-      target = (freq[c.band] / 255) * P.sens; if (target > 1) target = 1;
-    } else if (skeleton) {
-      target = 0;
-    } else {
-      target = 0.12 + 0.10 * (0.5 + 0.5 * Math.sin(t * 0.001 * c.speed + c.phase));
-    }
-    c.v += (target > c.v ? P.atk : P.rel) * (target - c.v);
-
-    var wt = c.baseW * (1 + P.grid * 0.6 * c.v + (c.band < 12 ? kickPulse * P.grid * 0.4 : 0));
-    c.wCur += 0.4 * (wt - c.wCur);
-    c.el.style.flexGrow = c.wCur.toFixed(3);
-  }
-  if (playing && !skeleton) {
-    var low = (freq[2] + freq[4] + freq[6]) / (3 * 255);
-    for (i = 0; i < R.length; i++)
-      R[i].el.style.flexGrow = (R[i].base * (1 + P.grid * 0.28 * low * Math.sin(t * 0.002 + i * 1.7))).toFixed(3);
-  }
-
-  // 第二遍：canvas自己画底、画黑块、把每个字裁进格子里抻满
-  var fr = frame.getBoundingClientRect();
-  var W = frame.clientWidth, H = frame.clientHeight;
-  if (canvas.width !== Math.round(W * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); }
+  var W = window.innerWidth, H = window.innerHeight;
+  if (stage.width !== Math.round(W * dpr)) { stage.width = Math.round(W * dpr); stage.height = Math.round(H * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  // 底色（canvas自绘，浏览器深色模式管不到）
-  ctx.fillStyle = '#f2f0eb';
-  ctx.fillRect(0, 0, W, H);
-
-  // 静动两幕：未开声时是安静的海报（无布无档案）；开声后背景才活过来
-  if (playing) {
-    var lowBg = (freq[2] + freq[4] + freq[6]) / (3 * 255);
+  // —— 底层：布 ——
+  ctx.fillStyle = '#efe9dc'; ctx.fillRect(0, 0, W, H);
+  // 织纹平铺
+  if (P.weave > 0 && weaveTile) {
+    ctx.globalAlpha = 0.5 * P.weave;
+    var pat = ctx.createPattern(weaveTile, 'repeat');
+    ctx.fillStyle = pat; ctx.fillRect(0, 0, W, H);
     ctx.globalAlpha = 1;
-    drawCloth(t, W, H, lowBg);   // 底层布：几乎不动
-    drawArchive(t, W, H);        // 中层档案：偶尔浮现
+  }
+  // 光影褶皱：几条极缓的明暗带，随低音轻起伏
+  if (P.fold > 0) {
+    var bands = 4;
+    for (var b = 0; b < bands; b++) {
+      var yy = ((b + 0.5) / bands) * H + Math.sin(t * 0.00028 + b * 1.4) * H * 0.05 * (0.5 + low);
+      var a = 0.05 * P.fold * (0.6 + low * 0.9);
+      var g = ctx.createLinearGradient(0, yy - H * 0.3, 0, yy + H * 0.3);
+      g.addColorStop(0, 'rgba(120,100,70,0)');
+      g.addColorStop(0.5, 'rgba(90,74,48,' + a.toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(120,100,70,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, yy - H * 0.3, W, H * 0.6);
+    }
+  }
+
+  // —— 中层：幽灵衣服廓形，从左至右徘徊循环 ——
+  if (P.ghost > 0 && ghostImg) {
+    ghostX += (1 / (P.gspd * 60)); // 每帧推进
+    if (ghostX > 1.25) ghostX = -0.25;
+    var gh = H * 0.72, gw = gh * (ghostImg.width / ghostImg.height);
+    var gx = -gw + ghostX * (W + gw * 2);      // 从屏外左进，屏外右出
+    var gy = H * 0.5 - gh / 2 + Math.sin(t * 0.0006) * H * 0.03;
+    // 边缘淡入淡出：屏中最实，两侧化开
+    var edge = Math.min(1, Math.min((gx + gw) / (W * 0.35), (W - gx) / (W * 0.35)));
+    edge = Math.max(0, edge);
+    var flick = 1 - P.gflk * (0.5 + 0.5 * Math.sin(t * 0.004 + Math.sin(t * 0.0013) * 3)); // 忽隐忽现
+    ctx.globalAlpha = Math.max(0, 0.22 * P.ghost * edge * flick);
+    ctx.drawImage(ghostImg, gx, gy, gw, gh);
     ctx.globalAlpha = 1;
   }
 
+  // —— 上层：字（黑，透明底，压在布上）——
+  var gr = grid.getBoundingClientRect();
+  var i, c, target;
   for (i = 0; i < N; i++) {
     c = C[i];
-    var rc = c.el.getBoundingClientRect();
-    var cw = rc.width, ch = rc.height;
-    var cx = rc.left - fr.left, cy = rc.top - fr.top;
-    if (cw < 2 || ch < 2) continue;
-
-    if (skeleton) {
-      ctx.strokeStyle = 'rgba(17,17,17,0.5)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(cx + 0.5, cy + 0.5, cw - 1, ch - 1);
-      continue;
+    if (playing && !inBreak && c.stuckUntil < t && Math.random() < P.stuck) c.stuckUntil = t + 500 + Math.random() * 1700;
+    var stuck = c.stuckUntil > t;
+    if (!stuck) {
+      if (playing && !inBreak) { target = (freq[c.band] / 255) * P.sens; if (target > 1) target = 1; }
+      else if (playing && inBreak) target = 0.02;
+      else target = 0.12 + 0.10 * (0.5 + 0.5 * Math.sin(t * 0.001 * c.speed + c.phase));
+      c.v += (target > c.v ? P.atk : P.rel) * (target - c.v);
     }
 
-    // 黑格子的底
-    if (c.inv) { ctx.fillStyle = '#111'; ctx.fillRect(cx, cy, cw, ch); }
+    var rc = c.el.getBoundingClientRect();
+    var cw = rc.width, ch = rc.height, cx = rc.left, cy = rc.top;
+    if (cw < 2 || ch < 2) continue;
 
-    var weight = c.isCN ? Math.round(260 + 520 * c.v)
-                        : Math.round(P.wBase + P.wAmp * c.v);
+    var weight = c.isCN ? Math.round(260 + 520 * c.v) : Math.round(P.wBase + P.wAmp * c.v);
     var mk = inkMetrics(c.ch, c.isCN, weight);
-    var sx = (cw * P.pad) / mk.w;
-    var sy = (ch * P.pad) / mk.h;
+    var sx = (cw * P.pad) / mk.w, sy = (ch * P.pad) / mk.h;
 
     ctx.save();
-    // 关键：裁进格子，字再大也不会溢出去糊到别人（参考图那种被框切掉的效果）
-    ctx.beginPath();
-    ctx.rect(cx, cy, cw, ch);
-    ctx.clip();
-
-    ctx.translate(cx + cw / 2, cy + ch / 2);
-    ctx.scale(sx, sy);
-    ctx.font = weight + " 100px " + mk.fam;
-    ctx.textBaseline = 'alphabetic';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = c.inv ? '#f2f0eb' : '#111';
+    ctx.beginPath(); ctx.rect(cx, cy, cw, ch); ctx.clip();
+    ctx.translate(cx + cw / 2, cy + ch / 2); ctx.scale(sx, sy);
+    ctx.font = weight + " 100px " + mk.fam; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#181818';
     ctx.fillText(c.ch, (mk.l - mk.r) / 2, (mk.a - mk.d) / 2);
     ctx.restore();
   }
 
-  requestAnimationFrame(frameLoop);
+  requestAnimationFrame(loop);
 }
-requestAnimationFrame(frameLoop);
-
-// 字体加载完重绘一次（度量才准）
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){});
+requestAnimationFrame(loop);
 
 // ================= 点击开/关 =================
 var hint = document.getElementById('hint');
@@ -450,10 +346,9 @@ function bind(id, key) {
   input.value = P[key]; label.textContent = P[key];
   input.addEventListener('input', function () { P[key] = parseFloat(input.value); label.textContent = input.value; });
 }
-bind('bpm', 'bpm'); bind('grid', 'grid'); bind('sens', 'sens');
-bind('atk', 'atk'); bind('rel', 'rel'); bind('wb', 'wBase');
-bind('wa', 'wAmp'); bind('pad', 'pad'); bind('stuck', 'stuck');
-bind('cloth', 'cloth'); bind('archive', 'archive'); bind('archiveGap', 'archiveGap');
+bind('bpm','bpm'); bind('grid','grid'); bind('sens','sens'); bind('atk','atk'); bind('rel','rel');
+bind('wb','wBase'); bind('wa','wAmp'); bind('pad','pad'); bind('stuck','stuck');
+bind('weave','weave'); bind('fold','fold'); bind('ghost','ghost'); bind('gspd','gspd'); bind('gflk','gflk');
 </script>
 </body>
 </html>
