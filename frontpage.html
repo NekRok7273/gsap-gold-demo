@@ -123,6 +123,9 @@
   <label>笔画粗细幅度 <span class="val" id="v-wa"></span><input type="range" id="p-wa" min="0" max="500" step="20"></label>
   <label>贴合度 <span class="val" id="v-pad"></span><input type="range" id="p-pad" min="0.85" max="1.05" step="0.01"></label>
   <label>卡机频率 <span class="val" id="v-stuck"></span><input type="range" id="p-stuck" min="0" max="0.02" step="0.001"></label>
+  <label>布·强度 <span class="val" id="v-cloth"></span><input type="range" id="p-cloth" min="0" max="2" step="0.1"></label>
+  <label>档案·强度 <span class="val" id="v-archive"></span><input type="range" id="p-archive" min="0" max="2" step="0.1"></label>
+  <label>档案·间隔秒 <span class="val" id="v-archiveGap"></span><input type="range" id="p-archiveGap" min="0.6" max="6" step="0.2"></label>
   <div class="tip">点画面开/关声音 · 拖滑块实时生效</div>
 </div>
 
@@ -137,7 +140,11 @@ var P = {
   wBase: 420,    // 笔画基准（降下来，不再糊成一团）
   wAmp: 360,     // 笔画随能量增粗
   pad: 0.94,     // 墨迹填满格子的比例（留一点边，字不互压）
-  stuck: 0.005
+  stuck: 0.005,
+  // —— 背景两层 ——
+  cloth: 0.6,    // 布：几乎察觉不到，只在低音最沉时起伏一下
+  archive: 0.8,  // 档案：残影浮现的强度
+  archiveGap: 2.6 // 档案：每次浮现的间隔秒数（偶尔，不是一直）
 };
 
 // ================= 结构 =================
@@ -256,6 +263,73 @@ function startAudio() {
   }, 24);
 }
 
+// ================= 背景两层：布(底) + 档案(中) =================
+var apparitions = [];   // 档案残影事件
+var lastAppear = 0;
+
+// 布：几张极淡的灰带缓慢漂移，只在低音沉时起伏。平时几乎看不见。
+function drawCloth(t, W, H, low) {
+  var amt = P.cloth;
+  if (amt <= 0) return;
+  var bands = 5;
+  for (var b = 0; b < bands; b++) {
+    var yy = ((b + 0.5) / bands) * H
+           + Math.sin(t * 0.00035 + b * 1.35) * H * 0.06 * (0.35 + low * 1.4);
+    var a = 0.055 * amt * (0.45 + low * 1.1);
+    var g = ctx.createLinearGradient(0, yy - H * 0.28, 0, yy + H * 0.28);
+    g.addColorStop(0, 'rgba(17,17,17,0)');
+    g.addColorStop(0.5, 'rgba(17,17,17,' + a.toFixed(3) + ')');
+    g.addColorStop(1, 'rgba(17,17,17,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, yy - H * 0.28, W, H * 0.56);
+  }
+}
+
+// 档案：偶尔浮现一段残影（软竖向拖影+内部条纹，暗示走动的人形/翻动），升起淡出。
+// 不用真实素材，纯生成的"类档案"，无版权。灰域中段，永不抢字。
+function drawArchive(t, W, H) {
+  var amt = P.archive;
+  // 偶尔生成一个残影事件
+  if (amt > 0 && t - lastAppear > P.archiveGap * 1000) {
+    lastAppear = t;
+    apparitions.push({
+      born: t,
+      life: 1500 + Math.random() * 1500,
+      x: (0.15 + Math.random() * 0.7) * W,
+      w: W * (0.10 + Math.random() * 0.16),
+      streaks: 3 + (Math.random() * 4 | 0),
+      seed: Math.random() * 1000
+    });
+    if (apparitions.length > 4) apparitions.shift();
+  }
+  for (var k = apparitions.length - 1; k >= 0; k--) {
+    var ap = apparitions[k];
+    var age = (t - ap.born) / ap.life;
+    if (age >= 1) { apparitions.splice(k, 1); continue; }
+    var env = Math.sin(age * Math.PI);          // 淡入淡出
+    var alpha = env * 0.20 * amt;               // 峰值也压在低透明，永不抢字
+    var yUp = (1 - age) * H * 0.10;             // 缓缓升起
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    // 软竖向拖影（人形/信号的残迹）
+    var gx = ctx.createLinearGradient(ap.x - ap.w / 2, 0, ap.x + ap.w / 2, 0);
+    gx.addColorStop(0, 'rgba(55,55,55,0)');
+    gx.addColorStop(0.5, 'rgba(55,55,55,1)');
+    gx.addColorStop(1, 'rgba(55,55,55,0)');
+    ctx.fillStyle = gx;
+    ctx.fillRect(ap.x - ap.w / 2, H * 0.08 + yUp, ap.w, H * 0.82);
+    // 内部竖条纹，像老影像的信号残留
+    for (var s = 0; s < ap.streaks; s++) {
+      var sx = ap.x - ap.w / 2 + (s + 0.5) / ap.streaks * ap.w
+             + Math.sin(t * 0.002 + ap.seed + s) * 3;
+      ctx.globalAlpha = alpha * (0.4 + 0.6 * Math.abs(Math.sin(ap.seed + s * 2)));
+      ctx.fillStyle = 'rgba(40,40,40,1)';
+      ctx.fillRect(sx, H * 0.1 + yUp, 1.2, H * 0.78);
+    }
+    ctx.restore();
+  }
+}
+
 // ================= 渲染 =================
 var dpr = Math.min(window.devicePixelRatio || 1, 2);
 
@@ -300,9 +374,18 @@ function frameLoop(t) {
   if (canvas.width !== Math.round(W * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  // 底色由canvas画（浏览器深色模式管不到canvas像素）
+  // 底色（canvas自绘，浏览器深色模式管不到）
   ctx.fillStyle = '#f2f0eb';
   ctx.fillRect(0, 0, W, H);
+
+  // 静动两幕：未开声时是安静的海报（无布无档案）；开声后背景才活过来
+  if (playing) {
+    var lowBg = (freq[2] + freq[4] + freq[6]) / (3 * 255);
+    ctx.globalAlpha = 1;
+    drawCloth(t, W, H, lowBg);   // 底层布：几乎不动
+    drawArchive(t, W, H);        // 中层档案：偶尔浮现
+    ctx.globalAlpha = 1;
+  }
 
   for (i = 0; i < N; i++) {
     c = C[i];
@@ -370,6 +453,7 @@ function bind(id, key) {
 bind('bpm', 'bpm'); bind('grid', 'grid'); bind('sens', 'sens');
 bind('atk', 'atk'); bind('rel', 'rel'); bind('wb', 'wBase');
 bind('wa', 'wAmp'); bind('pad', 'pad'); bind('stuck', 'stuck');
+bind('cloth', 'cloth'); bind('archive', 'archive'); bind('archiveGap', 'archiveGap');
 </script>
 </body>
 </html>
