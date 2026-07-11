@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light only">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>CULTURE HIDES HERE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,17 +14,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&text=这里藏着文化&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { transform: none !important; }    /* 防翻译插件给祖先套transform打乱fixed定位 */
   html, body { height: 100%; overflow: hidden; background: #efe9dc;
     font-family: 'Roboto Flex', 'Arial Black', sans-serif; cursor: pointer; }
+  /* body用flex把字网格居中——不依赖fixed定位，插件的transform也打不乱 */
+  body { display: flex; align-items: center; justify-content: center; }
 
-  /* 全屏画布：布 + 幽灵 + 字，一次画完，从后往前叠 */
-  #stage { position: fixed; inset: 0; display: block; }
+  /* 全屏画布：布 + 幽灵 + 字，一次画完，从后往前叠。fixed脱离flex流 */
+  #stage { position: fixed; inset: 0; display: block; z-index: 0; }
 
-  /* 字的布局网格：居中一块（回到原来的尺寸），背景/幽灵才是全屏。只用来量位置，本身透明 */
+  /* 字的布局网格：居中一块（普通flex子元素，被body居中）。只用来量位置，本身透明 */
   #grid {
-    position: fixed;
-    inset: 0; margin: auto;               /* 稳的居中方式 */
+    position: relative; z-index: 1;
     height: 90vh; width: min(95vw, 74vh);
+    flex: 0 0 auto;
     display: flex; flex-direction: column;
     pointer-events: none; opacity: 0;
   }
