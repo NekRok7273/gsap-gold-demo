@@ -179,35 +179,14 @@ function buildWeave() {
 }
 buildWeave();
 
-// ================= 幽灵：衣服廓形（生成一次，已虚化）=================
+// ================= 幽灵：真实衣物加工成的残影（ghost.png，已抠图+压中灰+虚化）=================
 var ghostImg = null;
-function buildGhost() {
-  var w = 300, h = 460;
-  var g = document.createElement('canvas'); g.width = w; g.height = h;
-  var x = g.getContext('2d');
-  var cx = w / 2;
-  x.fillStyle = '#3a3a3a';
-  x.beginPath();
-  x.moveTo(cx - 28, 46);                          // 领口左
-  x.lineTo(cx - 98, 96);                           // 肩线左
-  x.lineTo(cx - 74, 158);                          // 腋下左
-  x.lineTo(cx - 52, 250);                          // 腰左
-  x.quadraticCurveTo(cx - 128, 372, cx - 116, h - 24); // 下摆外扩左（垂坠）
-  x.lineTo(cx + 116, h - 24);                       // 下摆底
-  x.quadraticCurveTo(cx + 128, 372, cx + 52, 250); // 下摆外扩右
-  x.lineTo(cx + 74, 158);                           // 腋下右
-  x.lineTo(cx + 98, 96);                            // 肩线右
-  x.lineTo(cx + 28, 46);                            // 领口右
-  x.closePath();
-  x.fill();
-  // 虚化，做成抓不住的残影
-  var b = document.createElement('canvas'); b.width = w; b.height = h;
-  var bx = b.getContext('2d');
-  bx.filter = 'blur(7px)';
-  bx.drawImage(g, 0, 0);
-  ghostImg = b;
-}
-buildGhost();
+var ghostReady = false;
+(function () {
+  var img = new Image();
+  img.onload = function () { ghostImg = img; ghostReady = true; };
+  img.src = 'ghost.png?' + Date.now();  // 带时间戳避免缓存旧图
+})();
 
 // ================= 音频 =================
 var audioOn = false, actx, analyser, freq, master, inBreak = false, kickPulse = 0;
